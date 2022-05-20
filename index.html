@@ -32,5 +32,62 @@
     Sorry, but your browser does not support HTML5's canvas element.
 </canvas>
 
+<br>
+<label for="primitiva"> Adicionar primitiva: </label>
+<select name="primitiva" id="primitiva">
+    <option value="cubo">Cubo</option>
+    <option value="piramide">Piramide Triangular</option>
+</select>
+<br><br>
+<button id="load_textura1">Carregar Textura</button>
+<button id="add_primitiva">Adicionar primitiva</button>
+<br><br>
+
+<label for="rotacao">Selecionar Objeto:</label>
+<select name="rotacao" id="rotacao">
+    <option value="cubo1"> Cubo 1 </option>
+    <option value="cubo2"> Cubo 2 </option>
+    <option value="piramide1">Piramide Triangular 1</option>
+</select><br><br>
+Rotacao X <input type="number" id="X_rotation" name="X_rotation"> <br>
+Rotacao Y <input type="number" id="Y_rotation" name="Y_rotation"> <br>
+Rotacao Z <input type="number" id="Z_rotation" name="Z_rotation"> <br>
+<button id="animar">Animar Objeto</button>
+<button id="parar">Terminar animacao</button>
+
+<h3>Manipular Objeto</h3>
+<label for="manip">Selecionar Objeto:</label>
+<select name="manip" id="manip">
+    <option value="cubo1"> Cubo 1 </option>
+    <option value="cubo2"> Cubo 2 </option>
+    <option value="piramide1">Piramide Triangular 1</option>
+</select><br><br>
+Scalling X <input type="number" id="Xscale_factor"> % <br>
+Scalling Y <input type="number" id="Yscale_factor"> % <br>
+Scalling Z <input type="number" id="Zscale_factor"> % <br>
+<br>
+Translacao X: <input type="number" id="X_translation"> <br>
+Translacao Y: <input type="number" id="Y_translation"> <br>
+Translacao Z: <input type="number" id="Z_translation"> <br>
+<button id="load_textura2">Carregar Textura</button>
+<button id="apply_transformacao">Aplicar Transformacao</button>
+
+
+<h3>Adicionar Modelo</h3>
+
+<button id="load_modelo">Carregar Modelo</button>
+<button id="load_textura3">Aplicar Transformacao</button><br>
+<button id="add_modelo">Carregar Modelo</button>
+
+<h3>Adicionar fonte de Luz</h3>
+<select name="Luz" id="Luz">
+    <option value="tipo"> Tipo </option>
+    <option value="tipo2">Tipo2</option>
+</select><br><br>
+<label>Direcao </label> <br>
+X: <input type="number" id="X_dir"> Y: <input type="number" id="Y_dir"> Z: <input type="number" id="Z_dir"> <br>
+
+<label>Intensidade </label> <br>
+R: <input type="number" id="R"> G: <input type="number" id="G"> B: <input type="number" id="B">
 </body>
 </html>
