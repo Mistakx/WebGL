@@ -1,18 +1,18 @@
-import React from "react";
+import React, {useRef} from "react";
 import initShaders from "./initShaders";
 
 function App() {
 
-    let pointsArray: any = [];
-    let colorsArray: any = [];
 
-    let cubeArray: any = [];
+    let pointsArray = useRef<any>([]);
+    let colorsArray = useRef<any>([]);
 
-    let gl: any;
-    let ctm: any;
-    let modelViewMatrix: any;
+    let cubeArray = useRef<any>([]);
 
-    let program: any;
+    let gl = useRef<any>(null);
+    let ctm = useRef<any>(null);
+    let modelViewMatrix = useRef<any>(null);
+    let program = useRef<any>(null);
 
     window.onload = function () {
         init();
@@ -22,9 +22,9 @@ function App() {
 
         // *** Get canvas ***
         const canvas: any = document.getElementById('gl-canvas');
-        gl = canvas.getContext('webgl') || canvas.getContext("experimental-webgl");
-        if (!gl) {
-            alert('WebGL not supported');
+        gl.current = canvas.getContext('webgl.current') || canvas.getContext("experimental-webgl");
+        if (!gl.current) {
+            alert('Webgl.current not supported');
             return;
         }
 
@@ -32,16 +32,16 @@ function App() {
         colorCube();
 
         // *** Set viewport ***
-        gl.viewport(0, 0, canvas.width, canvas.height)
+        gl.current.viewport(0, 0, canvas.width, canvas.height)
 
         // *** Set color to the canvas ***
-        gl.clearColor(1.0, 1.0, 1.0, 1.0)
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.enable(gl.DEPTH_TEST);
+        gl.current.clearColor(1.0, 1.0, 1.0, 1.0)
+        gl.current.clear(gl.current.COLOR_BUFFER_BIT | gl.current.DEPTH_BUFFER_BIT);
+        gl.current.enable(gl.current.DEPTH_TEST);
 
         // *** Initialize vertex and fragment shader ***
-        program = initShaders(gl, "vertex-shader", "fragment-shader");
-        gl.useProgram(program);
+        program.current = initShaders(gl.current, "vertex-shader", "fragment-shader");
+        gl.current.useProgram(program.current);
 
         // *** Create the event listeners for the buttons
         document.getElementById("add_cube")!.onclick = function () {
@@ -55,7 +55,7 @@ function App() {
     function colorCube() {
 
         // Specify the coordinates to draw
-        pointsArray = [
+        pointsArray.current = [
             // Front
             0.5, 0.5, 0.5,
             0.5, -.5, 0.5,
@@ -114,7 +114,7 @@ function App() {
         for (let face = 0; face < 6; face++) {
             let faceColor = vertexColors[face];
             for (let vertex = 0; vertex < 6; vertex++) {
-                colorsArray.push(...faceColor);
+                colorsArray.current.push(...faceColor);
             }
         }
 
@@ -123,64 +123,64 @@ function App() {
     function prepareCube(cube: any) {
 
         // *** Send position data to the GPU ***
-        let vBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pointsArray), gl.STATIC_DRAW);
+        let vBuffer = gl.current.createBuffer();
+        gl.current.bindBuffer(gl.current.ARRAY_BUFFER, vBuffer);
+        gl.current.bufferData(gl.current.ARRAY_BUFFER, new Float32Array(pointsArray.current), gl.current.STATIC_DRAW);
 
         // *** Define the form of the data ***
-        let vPosition = gl.getAttribLocation(program, "vPosition");
-        gl.enableVertexAttribArray(vPosition);
-        gl.vertexAttribPointer(vPosition, 3, gl.FLOAT, false, 0, 0);
+        let vPosition = gl.current.getAttribLocation(program.current, "vPosition");
+        gl.current.enableVertexAttribArray(vPosition);
+        gl.current.vertexAttribPointer(vPosition, 3, gl.current.FLOAT, false, 0, 0);
 
         // *** Send color data to the GPU ***
-        let cBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorsArray), gl.STATIC_DRAW);
+        let cBuffer = gl.current.createBuffer();
+        gl.current.bindBuffer(gl.current.ARRAY_BUFFER, cBuffer);
+        gl.current.bufferData(gl.current.ARRAY_BUFFER, new Float32Array(colorsArray.current), gl.current.STATIC_DRAW);
 
         // *** Define the color of the data ***
-        let vColor = gl.getAttribLocation(program, "vColor");
-        gl.enableVertexAttribArray(vColor);
-        gl.vertexAttribPointer(vColor, 3, gl.FLOAT, false, 0, 0);
+        let vColor = gl.current.getAttribLocation(program.current, "vColor");
+        gl.current.enableVertexAttribArray(vColor);
+        gl.current.vertexAttribPointer(vColor, 3, gl.current.FLOAT, false, 0, 0);
 
         // *** Get a pointer for the model viewer
-        modelViewMatrix = gl.getUniformLocation(program, "modelViewMatrix");
+        modelViewMatrix.current = gl.current.getUniformLocation(program.current, "modelViewMatrix");
         // @ts-ignore
-        ctm = mat4.create();
+        ctm.current = mat4.create();
 
         // *** Apply transformations ***
         // @ts-ignore
-        mat4.scale(ctm, ctm, [cube.scale, cube.scale, cube.scale]);
+        mat4.scale(ctm.current, ctm.current, [cube.scale, cube.scale, cube.scale]);
         // @ts-ignore
-        mat4.translate(ctm, ctm, [cube.translation.x, cube.translation.y, cube.translation.z]);
+        mat4.translate(ctm.current, ctm.current, [cube.translation.x, cube.translation.y, cube.translation.z]);
 
         // *** Rotate cube (if necessary) ***
         cube.currentRotation.x += cube.rotation.x;
         cube.currentRotation.y += cube.rotation.y;
         cube.currentRotation.z += cube.rotation.z;
         // @ts-ignore
-        mat4.rotateX(ctm, ctm, cube.currentRotation.x);
+        mat4.rotateX(ctm.current, ctm.current, cube.currentRotation.x);
         // @ts-ignore
-        mat4.rotateY(ctm, ctm, cube.currentRotation.y);
+        mat4.rotateY(ctm.current, ctm.current, cube.currentRotation.y);
         // @ts-ignore
-        mat4.rotateZ(ctm, ctm, cube.currentRotation.z);
+        mat4.rotateZ(ctm.current, ctm.current, cube.currentRotation.z);
 
         // *** Transfer the information to the model viewer ***
-        gl.uniformMatrix4fv(modelViewMatrix, false, ctm);
+        gl.current.uniformMatrix4fv(modelViewMatrix.current, false, ctm.current);
 
         // *** Draw the triangles ***
-        gl.drawArrays(gl.TRIANGLES, 0, pointsArray.length / 3);
+        gl.current.drawArrays(gl.current.TRIANGLES, 0, pointsArray.current.length / 3);
 
     }
 
     function addCube() {
         // Extract the information of the fields
-        let scaleFactor = (document.getElementById("scale_factor") as any).value;
-        let xTranslation = (document.getElementById("X_translation") as any).value;
-        let yTranslation = (document.getElementById("Y_translation") as any).value;
-        let zTranslation = (document.getElementById("Z_translation") as any).value;
-        let xRotation = (document.getElementById("X_rotation") as any).value;
-        let yRotation = (document.getElementById("Y_rotation") as any).value;
-        let zRotation = (document.getElementById("Z_rotation") as any).value;
+        // let scaleFactor = (document.getElementById("scale_factor") as any).value;
+        // let xTranslation = (document.getElementById("X_translation") as any).value;
+        // let yTranslation = (document.getElementById("Y_translation") as any).value;
+        // let zTranslation = (document.getElementById("Z_translation") as any).value;
+        // let xRotation = (document.getElementById("X_rotation") as any).value;
+        // let yRotation = (document.getElementById("Y_rotation") as any).value;
+        // let zRotation = (document.getElementById("Z_rotation") as any).value;
 
         // If the form has all the fields field
         let valid = scaleFactor && xTranslation && yTranslation && zTranslation && xRotation && yRotation && zRotation;
@@ -205,7 +205,7 @@ function App() {
                 }
             }
             // Append the cube object to the array
-            cubeArray.push(cube);
+            cubeArray.current.push(cube);
         }
 
     }
@@ -213,10 +213,10 @@ function App() {
     function render() {
 
         // Clear the canvas
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.current.clear(gl.current.COLOR_BUFFER_BIT | gl.current.DEPTH_BUFFER_BIT);
 
         //  Add the cubes to the canvas
-        for (const cube of cubeArray) {
+        for (const cube of cubeArray.current) {
             prepareCube(cube);
         }
 
@@ -228,15 +228,15 @@ function App() {
 
     const [shape, setShape] = React.useState<"Cube" | "Pyramid">("Cube");
 
-    const [xRotation, setXRotation] = React.useState("0");
-    const [yRotation, setYRotation] = React.useState("0");
-    const [zRotation, setZRotation] = React.useState("0");
+    const [xRotation, setXRotation] = React.useState("20");
+    const [yRotation, setYRotation] = React.useState("20");
+    const [zRotation, setZRotation] = React.useState("20");
 
-    const [scaleFactor, setScaleFactor] = React.useState("100");
+    const [scaleFactor, setScaleFactor] = React.useState("20");
 
     const [xTranslation, setXTranslation] = React.useState("10");
-    const [yTranslation, setYTranslation] = React.useState("1");
-    const [zTranslation, setZTranslation] = React.useState("0");
+    const [yTranslation, setYTranslation] = React.useState("20");
+    const [zTranslation, setZTranslation] = React.useState("20");
 
     const [frontFaceColor, setFrontFaceColor] = React.useState("#ff0000");
     const [backFaceColor, setBackFaceColor] = React.useState("#00ff00");
@@ -418,7 +418,12 @@ function App() {
                     <div className="row border border-primary m-3">
                         <div className="col border">
                             <h2>Scale</h2>
-                            <input type="number" id="scale_factor"/> % <br/>
+                            <input type="number" id="scale_factor"
+                                onChange={(e) => {
+                                    e.preventDefault()
+                                    setScaleFactor(e.target.value)
+                                }}
+                            /> % <br/>
                         </div>
                     </div>
 
