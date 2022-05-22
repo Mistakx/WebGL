@@ -28,9 +28,6 @@ function App() {
             return;
         }
 
-        // *** Computes the cube ***
-        colorCube();
-
         // *** Set viewport ***
         gl.current.viewport(0, 0, canvas.width, canvas.height)
 
@@ -42,11 +39,6 @@ function App() {
         // *** Initialize vertex and fragment shader ***
         program.current = initShaders(gl.current, "vertex-shader", "fragment-shader");
         gl.current.useProgram(program.current);
-
-        // *** Create the event listeners for the buttons
-        document.getElementById("add_cube")!.onclick = function () {
-            addCube();
-        };
 
         // *** Render ***
         render();
@@ -102,13 +94,15 @@ function App() {
 
         // Specify the colors of the faces
         let vertexColors = [
-            [1.0, 1.0, 0.0], // yellow
-            [0.0, 1.0, 0.0], // green
-            [0.0, 0.0, 1.0], // blue
-            [1.0, 0.0, 1.0], // magenta
-            [0.0, 1.0, 1.0], // cyan
-            [1.0, 0.0, 0.0], // red
+            [hexToRgb(frontFaceColor)?.r! / 255, hexToRgb(frontFaceColor)?.g! / 255, hexToRgb(frontFaceColor)?.b! / 255],
+            [hexToRgb(leftFaceColor)?.r! / 255, hexToRgb(leftFaceColor)?.g! / 255, hexToRgb(leftFaceColor)?.b! / 255],
+            [hexToRgb(backFaceColor)?.r! / 255, hexToRgb(backFaceColor)?.g! / 255, hexToRgb(backFaceColor)?.b! / 255],
+            [hexToRgb(rightFaceColor)?.r! / 255, hexToRgb(rightFaceColor)?.g! / 255, hexToRgb(rightFaceColor)?.b! / 255],
+            [hexToRgb(topFaceColor)?.r! / 255, hexToRgb(topFaceColor)?.g! / 255, hexToRgb(topFaceColor)?.b! / 255],
+            [hexToRgb(bottomFaceColor)?.r! / 255, hexToRgb(bottomFaceColor)?.g! / 255, hexToRgb(bottomFaceColor)?.b! / 255],
         ];
+
+        console.log(vertexColors);
 
         // Set the color of the faces
         for (let face = 0; face < 6; face++) {
@@ -173,14 +167,9 @@ function App() {
     }
 
     function addCube() {
-        // Extract the information of the fields
-        // let scaleFactor = (document.getElementById("scale_factor") as any).value;
-        // let xTranslation = (document.getElementById("X_translation") as any).value;
-        // let yTranslation = (document.getElementById("Y_translation") as any).value;
-        // let zTranslation = (document.getElementById("Z_translation") as any).value;
-        // let xRotation = (document.getElementById("X_rotation") as any).value;
-        // let yRotation = (document.getElementById("Y_rotation") as any).value;
-        // let zRotation = (document.getElementById("Z_rotation") as any).value;
+
+        // *** Computes the cube ***
+        colorCube();
 
         // If the form has all the fields field
         let valid = scaleFactor && xTranslation && yTranslation && zTranslation && xRotation && yRotation && zRotation;
@@ -206,8 +195,10 @@ function App() {
             }
             // Append the cube object to the array
             cubeArray.current.push(cube);
+            console.log(cubeArray.current);
+        } else {
+            alert("Please fill all the fields");
         }
-
     }
 
     function render() {
@@ -228,15 +219,15 @@ function App() {
 
     const [shape, setShape] = React.useState<"Cube" | "Pyramid">("Cube");
 
-    const [xRotation, setXRotation] = React.useState("20");
-    const [yRotation, setYRotation] = React.useState("20");
-    const [zRotation, setZRotation] = React.useState("20");
+    const [xRotation, setXRotation] = React.useState("0");
+    const [yRotation, setYRotation] = React.useState("0");
+    const [zRotation, setZRotation] = React.useState("0");
 
-    const [scaleFactor, setScaleFactor] = React.useState("20");
+    const [scaleFactor, setScaleFactor] = React.useState("100");
 
-    const [xTranslation, setXTranslation] = React.useState("10");
-    const [yTranslation, setYTranslation] = React.useState("20");
-    const [zTranslation, setZTranslation] = React.useState("20");
+    const [xTranslation, setXTranslation] = React.useState("0");
+    const [yTranslation, setYTranslation] = React.useState("0");
+    const [zTranslation, setZTranslation] = React.useState("0");
 
     const [frontFaceColor, setFrontFaceColor] = React.useState("#ff0000");
     const [backFaceColor, setBackFaceColor] = React.useState("#00ff00");
@@ -245,7 +236,7 @@ function App() {
     const [topFaceColor, setTopFaceColor] = React.useState("#ff00ff");
     const [bottomFaceColor, setBottomFaceColor] = React.useState("#00ffff");
     const [selectedFace, setSelectedFace] = React.useState<"Front" | "Back" | "Left" | "Right" | "Top" | "Bottom">("Front");
-    const [selectedFaceColor, setSelectedFaceColor] = React.useState("#ffffff");
+    const [selectedFaceColor, setSelectedFaceColor] = React.useState(frontFaceColor);
 
     let shapeFacesDropdown;
     if (shape === "Cube") {
@@ -294,19 +285,19 @@ function App() {
                     <div className="row border border-primary m-3">
                         <div className="col">
                             <h2>Rotation</h2>
-                            X: <input type="number" id="X_rotation" name="X_rotation"
+                            X: <input type="number" id="X_rotation" name="X_rotation" value={xRotation}
                                       onChange={(e) => {
                                           setXRotation(e.target.value)
                                       }}
                         />
                             <br/>
-                            Y: <input type="number" id="Y_rotation" name="Y_rotation"
+                            Y: <input type="number" id="Y_rotation" name="Y_rotation" value={yRotation}
                                       onChange={(e) => {
                                           setYRotation(e.target.value)
                                       }}
                         />
                             <br/>
-                            Z: <input type="number" id="Z_rotation" name="Z_rotation"
+                            Z: <input type="number" id="Z_rotation" name="Z_rotation" value={zRotation}
                                       onChange={(e) => {
                                           setZRotation(e.target.value)
                                       }}
@@ -405,7 +396,6 @@ function App() {
                             <button id="add_cube"
                                     onClick={() => {
                                         addCube()
-                                        console.log({zRotation})
                                     }}
                             >
                                 Add {shape}</button>
@@ -418,11 +408,11 @@ function App() {
                     <div className="row border border-primary m-3">
                         <div className="col border">
                             <h2>Scale</h2>
-                            <input type="number" id="scale_factor"
-                                onChange={(e) => {
-                                    e.preventDefault()
-                                    setScaleFactor(e.target.value)
-                                }}
+                            <input type="number" id="scale_factor" value={scaleFactor}
+                                   onChange={(e) => {
+                                       e.preventDefault()
+                                       setScaleFactor(e.target.value)
+                                   }}
                             /> % <br/>
                         </div>
                     </div>
@@ -431,9 +421,24 @@ function App() {
                     <div className="row border border-primary m-3">
                         <div className="col">
                             <h2>Translation</h2>
-                            X: <input type="number" id="X_translation"/> % <br/>
-                            Y: <input type="number" id="Y_translation"/> % <br/>
-                            Z: <input type="number" id="Z_translation"/> % <br/>
+                            X: <input type="number" id="X_translation" value={xTranslation}
+                                      onChange={(e) => {
+                                          e.preventDefault()
+                                          setXTranslation(e.target.value)
+                                      }}
+                        /> % <br/>
+                            Y: <input type="number" id="Y_translation" value={yTranslation}
+                                      onChange={(e) => {
+                                          e.preventDefault()
+                                          setYTranslation(e.target.value)
+                                      }}
+                        /> % <br/>
+                            Z: <input type="number" id="Z_translation" value={zTranslation}
+                                      onChange={(e) => {
+                                          e.preventDefault()
+                                          setZTranslation(e.target.value)
+                                      }}
+                        /> % <br/>
                         </div>
                     </div>
 
