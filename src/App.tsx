@@ -332,25 +332,37 @@ function App() {
 
     const [shape, setShape] = React.useState<"Cube" | "Pyramid">("Cube");
 
-    const [xRotation, setXRotation] = React.useState("0");
-    const [yRotation, setYRotation] = React.useState("0");
-    const [zRotation, setZRotation] = React.useState("0");
+    const defaultXRotation = "0";
+    const defaultYRotation = "0";
+    const defaultZRotation = "0";
+    const [xRotation, setXRotation] = React.useState(defaultXRotation);
+    const [yRotation, setYRotation] = React.useState(defaultYRotation);
+    const [zRotation, setZRotation] = React.useState(defaultZRotation);
 
-    const [scaleFactor, setScaleFactor] = React.useState("100");
+    const defaultScaleFactor = "100";
+    const [scaleFactor, setScaleFactor] = React.useState(defaultScaleFactor);
 
-    const [xTranslation, setXTranslation] = React.useState("0");
-    const [yTranslation, setYTranslation] = React.useState("0");
-    const [zTranslation, setZTranslation] = React.useState("0");
-
+    const defaultXTranslation = "0";
+    const defaultYTranslation = "0";
+    const defaultZTranslation = "0";
+    const [xTranslation, setXTranslation] = React.useState(defaultXTranslation);
+    const [yTranslation, setYTranslation] = React.useState(defaultYTranslation);
+    const [zTranslation, setZTranslation] = React.useState(defaultZTranslation);
 
 
     // Add geometry faces dropdown
-    const [frontFaceColor, setFrontFaceColor] = React.useState("#ff0000");
-    const [backFaceColor, setBackFaceColor] = React.useState("#00ff00");
-    const [leftFaceColor, setLeftFaceColor] = React.useState("#0000ff");
-    const [rightFaceColor, setRightFaceColor] = React.useState("#ffff00");
-    const [topFaceColor, setTopFaceColor] = React.useState("#ff00ff");
-    const [bottomFaceColor, setBottomFaceColor] = React.useState("#00ffff");
+    const defaultFrontFaceColor = "#ff0000";
+    const defaultBackFaceColor = "#00ff00";
+    const defaultLeftFaceColor = "#0000ff";
+    const defaultRightFaceColor = "#ffff00";
+    const defaultTopFaceColor = "#ff00ff";
+    const defaultBottomFaceColor = "#00ffff";
+    const [frontFaceColor, setFrontFaceColor] = React.useState(defaultFrontFaceColor);
+    const [backFaceColor, setBackFaceColor] = React.useState(defaultBackFaceColor);
+    const [leftFaceColor, setLeftFaceColor] = React.useState(defaultLeftFaceColor);
+    const [rightFaceColor, setRightFaceColor] = React.useState(defaultRightFaceColor);
+    const [topFaceColor, setTopFaceColor] = React.useState(defaultTopFaceColor);
+    const [bottomFaceColor, setBottomFaceColor] = React.useState(defaultBottomFaceColor);
     const [selectedFace, setSelectedFace] = React.useState<"Front" | "Back" | "Left" | "Right" | "Top" | "Bottom">("Front");
     const [selectedFaceColor, setSelectedFaceColor] = React.useState(frontFaceColor);
     let shapeFacesDropdown;
@@ -377,23 +389,39 @@ function App() {
     const [numberOfGeometryShapesDropdown, setNumberOfGeometryShapesDropdown] = React.useState<JSX.Element[]>([])
     const [numberOfGeometricObjectsAdded, setNumberOfGeometricObjectsAdded] = React.useState(0);
     useEffect(() => {
-
-        if (numberOfGeometricObjectsAdded === 0) {
-            setNumberOfGeometryShapesDropdown([<option>No geometric shapes added yet</option>])
-        } else {
-            let newNumberOfGeometryShapesDropdown: JSX.Element[] = [];
-            let currentIndex = 0
-            for (const currentGeometryShape of objectsArray.current) {
-                newNumberOfGeometryShapesDropdown.push(
-                    <option value={currentIndex}>Geometric
-                        object: {currentIndex}</option>)
-                currentIndex++
-            }
-            setNumberOfGeometryShapesDropdown(newNumberOfGeometryShapesDropdown)
+        let newNumberOfGeometryShapesDropdown: JSX.Element[] = [];
+        let currentIndex = 0
+        newNumberOfGeometryShapesDropdown.push(<option value={420}>New geometric shape</option>)
+        for (const currentGeometryShape of objectsArray.current) {
+            newNumberOfGeometryShapesDropdown.push(
+                <option value={currentIndex}>Geometric
+                    object: {currentIndex}</option>)
+            currentIndex++
         }
-
+        setNumberOfGeometryShapesDropdown(newNumberOfGeometryShapesDropdown)
     }, [numberOfGeometricObjectsAdded])
 
+    // Selected geometry shape and translation
+    const [selectedGeometryScaleOrTranslation, setSelectedGeometryScaleOrTranslation] = React.useState<string>("420");
+    useEffect(() => {
+        if (selectedGeometryScaleOrTranslation === "420") {
+            setXTranslation(defaultXTranslation);
+            setYTranslation(defaultYTranslation);
+            setZTranslation(defaultZTranslation);
+        } else {
+        }
+    }, [selectedGeometryScaleOrTranslation])
+
+    // Selected geometry rotation
+    const [selectedGeometryRotation, setSelectedGeometryRotation] = React.useState<string>("420");
+    useEffect(() => {
+        if (selectedGeometryRotation === "420") {
+            setXRotation(defaultXRotation);
+            setYRotation(defaultYRotation);
+            setZRotation(defaultZRotation);
+        } else {
+        }
+    }, [selectedGeometryRotation])
 
     function hexToRgb(hex: string) {
         let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -554,14 +582,20 @@ function App() {
 
                     {/*Scaling and translation*/}
                     <div className="row border border-primary m-3">
-
+                        {/*Select geometry dropdown*/}
                         <div className="row">
                             <div className="col">
-
-                                <select>
+                                <select onChange={(e) => {
+                                    setSelectedGeometryScaleOrTranslation(e.target.value)
+                                }}>
                                     {numberOfGeometryShapesDropdown}
                                 </select>
+                            </div>
+                        </div>
 
+                        {/*Scaling*/}
+                        <div className="row">
+                            <div className="col">
                                 <h2>Scale</h2>
                                 <input type="number" id="scale_factor" value={scaleFactor}
                                        onChange={(e) => {
@@ -597,7 +631,6 @@ function App() {
                             </div>
                         </div>
                     </div>
-
 
 
                 </div>
