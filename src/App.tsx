@@ -1,4 +1,4 @@
-import React, {useRef} from "react";
+import React, {useEffect, useRef} from "react";
 import initShaders from "./initShaders";
 
 function App() {
@@ -7,7 +7,7 @@ function App() {
     let pointsArray = useRef<any>([]);
     let colorsArray = useRef<any>([]);
 
-    let cubeArray = useRef<any>([]);
+    let objectsArray = useRef<any>([]);
 
     let gl = useRef<any>(null);
     let ctm = useRef<any>(null);
@@ -47,7 +47,8 @@ function App() {
     function createAndColorCube() {
 
         // Specify the coordinates to draw
-        pointsArray.current = [
+        pointsArray.current[objectsArray.current.length] = [
+
             // Front
             0.5, 0.5, 0.5,
             0.5, -.5, 0.5,
@@ -182,12 +183,15 @@ function App() {
     }
 
 
-    function prepareGeometricShape(cube: any) {
+    function prepareGeometricShape(cube: any, pointsArrayIndex: number) {
+
+        // console.log("Preparing geometric shape")
+        // console.log(pointsArray.current[0]);
 
         // *** Send position data to the GPU ***
         let vBuffer = gl.current.createBuffer();
         gl.current.bindBuffer(gl.current.ARRAY_BUFFER, vBuffer);
-        gl.current.bufferData(gl.current.ARRAY_BUFFER, new Float32Array(pointsArray.current), gl.current.STATIC_DRAW);
+        gl.current.bufferData(gl.current.ARRAY_BUFFER, new Float32Array(pointsArray.current[pointsArrayIndex]), gl.current.STATIC_DRAW);
 
         // *** Define the form of the data ***
         let vPosition = gl.current.getAttribLocation(program.current, "vPosition");
@@ -230,7 +234,7 @@ function App() {
         gl.current.uniformMatrix4fv(modelViewMatrix.current, false, ctm.current);
 
         // *** Draw the triangles ***
-        gl.current.drawArrays(gl.current.TRIANGLES, 0, pointsArray.current.length / 3);
+        gl.current.drawArrays(gl.current.TRIANGLES, 0, pointsArray.current[pointsArrayIndex].length / 3);
 
     }
 
@@ -262,7 +266,8 @@ function App() {
                 }
             }
             // Append the cube object to the array
-            cubeArray.current.push(cube);
+            objectsArray.current.push(cube);
+            setNumberOfGeometricObjectsAdded(numberOfGeometricObjectsAdded + 1);
         } else {
             alert("Please fill all the fields");
         }
@@ -296,7 +301,8 @@ function App() {
                 }
             }
             // Append the cube object to the array
-            cubeArray.current.push(cube);
+            objectsArray.current.push(cube);
+            setNumberOfGeometricObjectsAdded(numberOfGeometricObjectsAdded + 1);
         } else {
             alert("Please fill all the fields");
         }
@@ -308,9 +314,12 @@ function App() {
         // Clear the canvas
         gl.current.clear(gl.current.COLOR_BUFFER_BIT | gl.current.DEPTH_BUFFER_BIT);
 
+        let currentIndex = 0;
+
         //  Add the cubes to the canvas
-        for (const cube of cubeArray.current) {
-            prepareGeometricShape(cube);
+        for (const cube of objectsArray.current) {
+            prepareGeometricShape(cube, currentIndex);
+            currentIndex++
         }
 
         // Make the new frame
@@ -359,6 +368,30 @@ function App() {
             <option>Bottom</option>
         ]
     }
+
+    const [numberOfGeometryShapesDropdown, setNumberOfGeometryShapesDropdown] = React.useState<JSX.Element[]>([])
+    const [numberOfGeometricObjectsAdded, setNumberOfGeometricObjectsAdded] = React.useState(0);
+
+    useEffect(() => {
+
+        if (numberOfGeometricObjectsAdded === 0) {
+            setNumberOfGeometryShapesDropdown([<option>No geometric shapes added yet</option>])
+        } else {
+            let newNumberOfGeometryShapesDropdown: JSX.Element[] = [];
+            let currentIndex = 0
+            for (const currentGeometryShape of objectsArray.current) {
+                newNumberOfGeometryShapesDropdown.push(
+                    <option value={currentIndex}>Geometric
+                        object: {currentIndex}</option>)
+                currentIndex++
+            }
+            setNumberOfGeometryShapesDropdown(newNumberOfGeometryShapesDropdown)
+        }
+
+        console.log("numberOfGeometryShapesDropdown")
+        console.log(numberOfGeometryShapesDropdown)
+    }, [numberOfGeometricObjectsAdded])
+
 
     function hexToRgb(hex: string) {
         let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -431,6 +464,7 @@ function App() {
                                     </select>
                                     <br/>
                                 </div>
+
                             </div>
 
                             <div className="row">
@@ -498,8 +532,13 @@ function App() {
                         <div className="col m-2">
                             <button id="add_cube"
                                     onClick={() => {
-                                        if (shape === "Cube") addCube()
-                                        else if (shape === "Pyramid") addPyramid()
+                                        if (numberOfGeometricObjectsAdded > 4) alert("Already added 5 objects")
+                                        else {
+                                            if (shape === "Cube") addCube()
+                                            else if (shape === "Pyramid") addPyramid()
+                                        }
+
+
                                     }}
                             >
                                 Add {shape}</button>
@@ -511,6 +550,11 @@ function App() {
                     {/*Scaling*/}
                     <div className="row border border-primary m-3">
                         <div className="col border">
+
+                            <select>
+                                {numberOfGeometryShapesDropdown}
+                            </select>
+
                             <h2>Scale</h2>
                             <input type="number" id="scale_factor" value={scaleFactor}
                                    onChange={(e) => {
