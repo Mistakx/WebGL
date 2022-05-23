@@ -1,13 +1,13 @@
 import React, {useEffect, useRef} from "react";
 import initShaders from "./initShaders";
+import {GeometryObject} from "../models/GeometryObject";
 
 function App() {
-
 
     let pointsArray = useRef<any>([]);
     let colorsArray = useRef<any>([]);
 
-    let objectsArray = useRef<any>([]);
+    let objectsArray = useRef<GeometryObject[]>([]);
 
     let gl = useRef<any>(null);
     let ctm = useRef<any>(null);
@@ -46,8 +46,8 @@ function App() {
 
     function createAndColorCube() {
 
-        console.log("objectsArray.current.length")
-        console.log(objectsArray.current.length)
+        // console.log("objectsArray.current.length")
+        // console.log(objectsArray.current.length)
 
         // Specify the coordinates to draw
         pointsArray.current[objectsArray.current.length] = [
@@ -184,7 +184,6 @@ function App() {
 
     }
 
-
     function prepareGeometricShape(cube: any, pointsArrayIndex: number, colorsArrayIndex: number) {
 
         // console.log("Preparing geometric shape")
@@ -310,7 +309,6 @@ function App() {
         }
     }
 
-
     function render() {
 
         // Clear the canvas
@@ -327,6 +325,15 @@ function App() {
         // Make the new frame
         requestAnimationFrame(render);
 
+    }
+
+    function hexToRgb(hex: string) {
+        let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
     }
 
 
@@ -401,36 +408,72 @@ function App() {
         setNumberOfGeometryShapesDropdown(newNumberOfGeometryShapesDropdown)
     }, [numberOfGeometricObjectsAdded])
 
-    // Selected geometry shape and translation
-    const [selectedGeometryScaleOrTranslation, setSelectedGeometryScaleOrTranslation] = React.useState<string>("420");
+    // Selected geometry
+    const [selectedGeometryToEdit, setSelectedGeometryToEdit] = React.useState<string>("420");
     useEffect(() => {
-        if (selectedGeometryScaleOrTranslation === "420") {
+        if (selectedGeometryToEdit === "420") {
             setXTranslation(defaultXTranslation);
             setYTranslation(defaultYTranslation);
             setZTranslation(defaultZTranslation);
-        } else {
-        }
-    }, [selectedGeometryScaleOrTranslation])
-
-    // Selected geometry rotation
-    const [selectedGeometryRotation, setSelectedGeometryRotation] = React.useState<string>("420");
-    useEffect(() => {
-        if (selectedGeometryRotation === "420") {
+            setScaleFactor(defaultScaleFactor);
             setXRotation(defaultXRotation);
             setYRotation(defaultYRotation);
             setZRotation(defaultZRotation);
-        } else {
-        }
-    }, [selectedGeometryRotation])
 
-    function hexToRgb(hex: string) {
-        let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16)
-        } : null;
+        } else {
+            setXTranslation((objectsArray.current[parseInt(selectedGeometryToEdit)].translation.x * 100).toString());
+            setYTranslation((objectsArray.current[parseInt(selectedGeometryToEdit)].translation.y * 100).toString());
+            setZTranslation((objectsArray.current[parseInt(selectedGeometryToEdit)].translation.z * 100).toString());
+            setScaleFactor((objectsArray.current[parseInt(selectedGeometryToEdit)].scale * 100).toString());
+            setXRotation((objectsArray.current[parseInt(selectedGeometryToEdit)].rotation.x / (Math.PI / 180)).toString());
+            setYRotation((objectsArray.current[parseInt(selectedGeometryToEdit)].rotation.y / (Math.PI / 180)).toString());
+            setZRotation((objectsArray.current[parseInt(selectedGeometryToEdit)].rotation.z / (Math.PI / 180)).toString());
+        }
+    }, [selectedGeometryToEdit])
+
+    // Transformation button
+    let transformationButton;
+    if (selectedGeometryToEdit !== "420") {
+        transformationButton = <button
+            onClick={(e) => {
+                objectsArray.current[parseInt(selectedGeometryToEdit)].scale = parseInt(scaleFactor) / 100
+                objectsArray.current[parseInt(selectedGeometryToEdit)].translation.x = parseInt(xTranslation) / 100
+                objectsArray.current[parseInt(selectedGeometryToEdit)].translation.y = parseInt(yTranslation) / 100
+                objectsArray.current[parseInt(selectedGeometryToEdit)].translation.z = parseInt(zTranslation) / 100
+            }}
+        >
+            Set transformation
+        </button>
     }
+
+    // Set animation button
+    let setAnimationButton;
+    if (selectedGeometryToEdit !== "420") {
+        setAnimationButton = <button
+            onClick={(e) => {
+                objectsArray.current[parseInt(selectedGeometryToEdit)].rotation.x = parseInt(xRotation) * (Math.PI / 180)
+                objectsArray.current[parseInt(selectedGeometryToEdit)].rotation.y = parseInt(yRotation) * (Math.PI / 180)
+                objectsArray.current[parseInt(selectedGeometryToEdit)].rotation.z = parseInt(zRotation) * (Math.PI / 180)
+            }}
+        >
+            Set animation
+        </button>
+    }
+
+    // Stop animation button
+    let stopAnimationButton;
+    if (selectedGeometryToEdit !== "420") {
+        stopAnimationButton = <button
+            onClick={(e) => {
+                objectsArray.current[parseInt(selectedGeometryToEdit)].rotation.x = 0
+                objectsArray.current[parseInt(selectedGeometryToEdit)].rotation.y = 0
+                objectsArray.current[parseInt(selectedGeometryToEdit)].rotation.z = 0
+            }}
+        >
+            Stop animation
+        </button>
+    }
+
 
     return (
         <div className="container">
@@ -449,11 +492,7 @@ function App() {
                     </div>
 
                     <div className="row border border-primary m-3">
-                        <div className="col">
-
-                            <select>
-                                {numberOfGeometryShapesDropdown}
-                            </select>
+                        <div className="col-8">
 
                             <h2>Rotation</h2>
                             X: <input type="number" id="X_rotation" name="X_rotation" value={xRotation}
@@ -474,6 +513,23 @@ function App() {
                                       }}
                         /> <br/>
                         </div>
+
+                        <div className="col m-3">
+
+                            <div className="row m-3">
+                                <div className="col">
+                                    {setAnimationButton}
+                                </div>
+                            </div>
+
+                            <div className="row m-3">
+                                <div className="col">
+                                    {stopAnimationButton}
+                                </div>
+                            </div>
+
+
+                        </div>
                     </div>
 
                 </div>
@@ -486,7 +542,6 @@ function App() {
 
                         <div className="col">
                             <div className="row">
-
                                 <div className="col m-2">
                                     <label>Choose a shape:</label>
                                     <select name="geometricShapeToAdd" id="geometricShapeToAdd"
@@ -499,7 +554,6 @@ function App() {
                                     </select>
                                     <br/>
                                 </div>
-
                             </div>
 
                             <div className="row">
@@ -564,17 +618,32 @@ function App() {
                             </div>
                         </div>
 
-                        <div className="col m-2">
-                            <button id="add_cube"
-                                    onClick={() => {
-                                        if (numberOfGeometricObjectsAdded > 4) alert("Already added 5 objects")
-                                        else {
-                                            if (shape === "Cube") addCube()
-                                            else if (shape === "Pyramid") addPyramid()
-                                        }
-                                    }}
-                            >
-                                Add {shape}</button>
+                        <div className="col">
+
+                            <div className="row m-2">
+                                <button id="add_cube"
+                                        onClick={() => {
+                                            if (selectedGeometryToEdit === "420") {
+                                                if (numberOfGeometricObjectsAdded > 4) alert("Already added 5 objects")
+                                                else {
+                                                    if (shape === "Cube") addCube()
+                                                    else if (shape === "Pyramid") addPyramid()
+                                                }
+                                            } else alert("Please select the choice to add a new geometric object.")
+
+                                        }}
+                                >
+                                    Add {shape}
+                                </button>
+                            </div>
+
+                            <div className="row m-2">
+                                <select onChange={(e) => {
+                                    setSelectedGeometryToEdit(e.target.value)
+                                }}>
+                                    {numberOfGeometryShapesDropdown}
+                                </select>
+                            </div>
                         </div>
 
 
@@ -582,54 +651,55 @@ function App() {
 
                     {/*Scaling and translation*/}
                     <div className="row border border-primary m-3">
-                        {/*Select geometry dropdown*/}
+
                         <div className="row">
-                            <div className="col">
-                                <select onChange={(e) => {
-                                    setSelectedGeometryScaleOrTranslation(e.target.value)
-                                }}>
-                                    {numberOfGeometryShapesDropdown}
-                                </select>
+
+                            {/*Scaling and translation*/}
+                            <div className="col-8">
+                                {/*Scaling*/}
+                                <div className="row">
+                                    <div className="col">
+                                        <h2>Scale</h2>
+                                        <input type="number" id="scale_factor" value={scaleFactor}
+                                               onChange={(e) => {
+                                                   e.preventDefault()
+                                                   setScaleFactor(e.target.value)
+                                               }}
+                                        /> % <br/>
+                                    </div>
+                                </div>
+                                {/*Translation*/}
+                                <div className="row">
+                                    <div className="col">
+                                        <h2>Translation</h2>
+                                        X: <input type="number" id="X_translation" value={xTranslation}
+                                                  onChange={(e) => {
+                                                      e.preventDefault()
+                                                      setXTranslation(e.target.value)
+                                                  }}
+                                    /> % <br/>
+                                        Y: <input type="number" id="Y_translation" value={yTranslation}
+                                                  onChange={(e) => {
+                                                      e.preventDefault()
+                                                      setYTranslation(e.target.value)
+                                                  }}
+                                    /> % <br/>
+                                        Z: <input type="number" id="Z_translation" value={zTranslation}
+                                                  onChange={(e) => {
+                                                      e.preventDefault()
+                                                      setZTranslation(e.target.value)
+                                                  }}
+                                    /> % <br/>
+                                    </div>
+                                </div>
                             </div>
+
+                            <div className="col m-2">
+                                {transformationButton}
+                            </div>
+
                         </div>
 
-                        {/*Scaling*/}
-                        <div className="row">
-                            <div className="col">
-                                <h2>Scale</h2>
-                                <input type="number" id="scale_factor" value={scaleFactor}
-                                       onChange={(e) => {
-                                           e.preventDefault()
-                                           setScaleFactor(e.target.value)
-                                       }}
-                                /> % <br/>
-                            </div>
-                        </div>
-
-                        {/*Translation*/}
-                        <div className="row">
-                            <div className="col">
-                                <h2>Translation</h2>
-                                X: <input type="number" id="X_translation" value={xTranslation}
-                                          onChange={(e) => {
-                                              e.preventDefault()
-                                              setXTranslation(e.target.value)
-                                          }}
-                            /> % <br/>
-                                Y: <input type="number" id="Y_translation" value={yTranslation}
-                                          onChange={(e) => {
-                                              e.preventDefault()
-                                              setYTranslation(e.target.value)
-                                          }}
-                            /> % <br/>
-                                Z: <input type="number" id="Z_translation" value={zTranslation}
-                                          onChange={(e) => {
-                                              e.preventDefault()
-                                              setZTranslation(e.target.value)
-                                          }}
-                            /> % <br/>
-                            </div>
-                        </div>
                     </div>
 
 
@@ -637,7 +707,6 @@ function App() {
 
 
             </div>
-
 
         </div>
     );
