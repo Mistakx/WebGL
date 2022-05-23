@@ -46,6 +46,9 @@ function App() {
 
     function createAndColorCube() {
 
+        console.log("objectsArray.current.length")
+        console.log(objectsArray.current.length)
+
         // Specify the coordinates to draw
         pointsArray.current[objectsArray.current.length] = [
 
@@ -103,15 +106,17 @@ function App() {
             [hexToRgb(bottomFaceColor)?.r! / 255, hexToRgb(bottomFaceColor)?.g! / 255, hexToRgb(bottomFaceColor)?.b! / 255],
         ];
 
+        colorsArray.current[objectsArray.current.length] = []
         // Set the color of the faces
         for (let face = 0; face < 6; face++) {
             let faceColor = vertexColors[face];
             for (let vertex = 0; vertex < 6; vertex++) {
-                colorsArray.current.push(...faceColor);
+                colorsArray.current[objectsArray.current.length].push(...faceColor);
             }
         }
-        console.log("colorsArray.current");
-        console.log(colorsArray.current);
+
+        // console.log("New color array")
+        // console.log(colorsArray.current)
 
     }
 
@@ -161,28 +166,26 @@ function App() {
             [hexToRgb(bottomFaceColor)?.r! / 255, hexToRgb(bottomFaceColor)?.g! / 255, hexToRgb(bottomFaceColor)?.b! / 255],
         ];
 
-
+        colorsArray.current[objectsArray.current.length] = []
         // Set the color of the faces
         for (let face = 0; face < 4; face++) {
             let faceColor = vertexColors[face];
             for (let vertex = 0; vertex < 3; vertex++) {
-                colorsArray.current.push(...faceColor);
+                colorsArray.current[objectsArray.current.length].push(...faceColor);
             }
         }
 
         for (let face = 4; face < 5; face++) {
             let faceColor = vertexColors[face];
             for (let vertex = 0; vertex < 6; vertex++) {
-                colorsArray.current.push(...faceColor);
+                colorsArray.current[objectsArray.current.length].push(...faceColor);
             }
         }
-        console.log("colorsArray.current");
-        console.log(colorsArray.current);
 
     }
 
 
-    function prepareGeometricShape(cube: any, pointsArrayIndex: number) {
+    function prepareGeometricShape(cube: any, pointsArrayIndex: number, colorsArrayIndex: number) {
 
         // console.log("Preparing geometric shape")
         // console.log(pointsArray.current[0]);
@@ -200,7 +203,7 @@ function App() {
         // *** Send color data to the GPU ***
         let cBuffer = gl.current.createBuffer();
         gl.current.bindBuffer(gl.current.ARRAY_BUFFER, cBuffer);
-        gl.current.bufferData(gl.current.ARRAY_BUFFER, new Float32Array(colorsArray.current), gl.current.STATIC_DRAW);
+        gl.current.bufferData(gl.current.ARRAY_BUFFER, new Float32Array(colorsArray.current[colorsArrayIndex]), gl.current.STATIC_DRAW);
 
         // *** Define the color of the data ***
         let vColor = gl.current.getAttribLocation(program.current, "vColor");
@@ -317,7 +320,7 @@ function App() {
 
         //  Add the cubes to the canvas
         for (const cube of objectsArray.current) {
-            prepareGeometricShape(cube, currentIndex);
+            prepareGeometricShape(cube, currentIndex, currentIndex);
             currentIndex++
         }
 
