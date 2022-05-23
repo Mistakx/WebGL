@@ -118,7 +118,7 @@ function App() {
     function createAndColorPyramid() {
 
         // Specify the coordinates to draw
-        pointsArray.current = [
+        pointsArray.current[objectsArray.current.length] = [
             // Pyramid front
             -.5, -.5, .5,
             0.5, -.5, .5,
@@ -151,7 +151,6 @@ function App() {
 
 
         ];
-
 
         // Specify the colors of the faces
         let vertexColors = [
@@ -340,6 +339,9 @@ function App() {
     const [yTranslation, setYTranslation] = React.useState("0");
     const [zTranslation, setZTranslation] = React.useState("0");
 
+
+
+    // Add geometry faces dropdown
     const [frontFaceColor, setFrontFaceColor] = React.useState("#ff0000");
     const [backFaceColor, setBackFaceColor] = React.useState("#00ff00");
     const [leftFaceColor, setLeftFaceColor] = React.useState("#0000ff");
@@ -348,7 +350,6 @@ function App() {
     const [bottomFaceColor, setBottomFaceColor] = React.useState("#00ffff");
     const [selectedFace, setSelectedFace] = React.useState<"Front" | "Back" | "Left" | "Right" | "Top" | "Bottom">("Front");
     const [selectedFaceColor, setSelectedFaceColor] = React.useState(frontFaceColor);
-
     let shapeFacesDropdown;
     if (shape === "Cube") {
         shapeFacesDropdown = [
@@ -369,9 +370,9 @@ function App() {
         ]
     }
 
+    // Selected geometry shape dropdown
     const [numberOfGeometryShapesDropdown, setNumberOfGeometryShapesDropdown] = React.useState<JSX.Element[]>([])
     const [numberOfGeometricObjectsAdded, setNumberOfGeometricObjectsAdded] = React.useState(0);
-
     useEffect(() => {
 
         if (numberOfGeometricObjectsAdded === 0) {
@@ -388,8 +389,6 @@ function App() {
             setNumberOfGeometryShapesDropdown(newNumberOfGeometryShapesDropdown)
         }
 
-        console.log("numberOfGeometryShapesDropdown")
-        console.log(numberOfGeometryShapesDropdown)
     }, [numberOfGeometricObjectsAdded])
 
 
@@ -420,6 +419,11 @@ function App() {
 
                     <div className="row border border-primary m-3">
                         <div className="col">
+
+                            <select>
+                                {numberOfGeometryShapesDropdown}
+                            </select>
+
                             <h2>Rotation</h2>
                             X: <input type="number" id="X_rotation" name="X_rotation" value={xRotation}
                                       onChange={(e) => {
@@ -537,8 +541,6 @@ function App() {
                                             if (shape === "Cube") addCube()
                                             else if (shape === "Pyramid") addPyramid()
                                         }
-
-
                                     }}
                             >
                                 Add {shape}</button>
@@ -547,48 +549,53 @@ function App() {
 
                     </div>
 
-                    {/*Scaling*/}
+                    {/*Scaling and translation*/}
                     <div className="row border border-primary m-3">
-                        <div className="col border">
 
-                            <select>
-                                {numberOfGeometryShapesDropdown}
-                            </select>
+                        <div className="row">
+                            <div className="col">
 
-                            <h2>Scale</h2>
-                            <input type="number" id="scale_factor" value={scaleFactor}
-                                   onChange={(e) => {
-                                       e.preventDefault()
-                                       setScaleFactor(e.target.value)
-                                   }}
+                                <select>
+                                    {numberOfGeometryShapesDropdown}
+                                </select>
+
+                                <h2>Scale</h2>
+                                <input type="number" id="scale_factor" value={scaleFactor}
+                                       onChange={(e) => {
+                                           e.preventDefault()
+                                           setScaleFactor(e.target.value)
+                                       }}
+                                /> % <br/>
+                            </div>
+                        </div>
+
+                        {/*Translation*/}
+                        <div className="row">
+                            <div className="col">
+                                <h2>Translation</h2>
+                                X: <input type="number" id="X_translation" value={xTranslation}
+                                          onChange={(e) => {
+                                              e.preventDefault()
+                                              setXTranslation(e.target.value)
+                                          }}
                             /> % <br/>
+                                Y: <input type="number" id="Y_translation" value={yTranslation}
+                                          onChange={(e) => {
+                                              e.preventDefault()
+                                              setYTranslation(e.target.value)
+                                          }}
+                            /> % <br/>
+                                Z: <input type="number" id="Z_translation" value={zTranslation}
+                                          onChange={(e) => {
+                                              e.preventDefault()
+                                              setZTranslation(e.target.value)
+                                          }}
+                            /> % <br/>
+                            </div>
                         </div>
                     </div>
 
-                    {/*Translation*/}
-                    <div className="row border border-primary m-3">
-                        <div className="col">
-                            <h2>Translation</h2>
-                            X: <input type="number" id="X_translation" value={xTranslation}
-                                      onChange={(e) => {
-                                          e.preventDefault()
-                                          setXTranslation(e.target.value)
-                                      }}
-                        /> % <br/>
-                            Y: <input type="number" id="Y_translation" value={yTranslation}
-                                      onChange={(e) => {
-                                          e.preventDefault()
-                                          setYTranslation(e.target.value)
-                                      }}
-                        /> % <br/>
-                            Z: <input type="number" id="Z_translation" value={zTranslation}
-                                      onChange={(e) => {
-                                          e.preventDefault()
-                                          setZTranslation(e.target.value)
-                                      }}
-                        /> % <br/>
-                        </div>
-                    </div>
+
 
                 </div>
 
