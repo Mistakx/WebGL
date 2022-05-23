@@ -44,7 +44,7 @@ function App() {
         render();
     }
 
-    function colorCube() {
+    function createAndColorCube() {
 
         // Specify the coordinates to draw
         pointsArray.current = [
@@ -102,8 +102,6 @@ function App() {
             [hexToRgb(bottomFaceColor)?.r! / 255, hexToRgb(bottomFaceColor)?.g! / 255, hexToRgb(bottomFaceColor)?.b! / 255],
         ];
 
-        console.log(vertexColors);
-
         // Set the color of the faces
         for (let face = 0; face < 6; face++) {
             let faceColor = vertexColors[face];
@@ -111,10 +109,80 @@ function App() {
                 colorsArray.current.push(...faceColor);
             }
         }
+        console.log("colorsArray.current");
+        console.log(colorsArray.current);
 
     }
 
-    function prepareCube(cube: any) {
+    function createAndColorPyramid() {
+
+        // Specify the coordinates to draw
+        pointsArray.current = [
+            // Pyramid front
+            -.5, -.5, .5,
+            0.5, -.5, .5,
+            0, 0.5, 0,
+
+            // Pyramid left
+            -.5, -.5, .5,
+            -.5, -.5, -.5,
+            0, 0.5, 0,
+
+            // Pyramid back
+            -.5, -.5, -.5,
+            0.5, -.5, -.5,
+            0, 0.5, 0,
+
+            // Pyramid right
+            0.5, -.5, .5,
+            0.5, -.5, -.5,
+            0, 0.5, 0,
+
+            // Pyramid bottom right
+            -.5, -.5, .5,
+            0.5, -.5, .5,
+            0.5, -.5, -.5,
+
+            // Pyramid bottom left
+            -.5, -.5, -.5,
+            0.5, -.5, -.5,
+            -.5, -.5, .5,
+
+
+        ];
+
+
+        // Specify the colors of the faces
+        let vertexColors = [
+            [hexToRgb(frontFaceColor)?.r! / 255, hexToRgb(frontFaceColor)?.g! / 255, hexToRgb(frontFaceColor)?.b! / 255],
+            [hexToRgb(leftFaceColor)?.r! / 255, hexToRgb(leftFaceColor)?.g! / 255, hexToRgb(leftFaceColor)?.b! / 255],
+            [hexToRgb(backFaceColor)?.r! / 255, hexToRgb(backFaceColor)?.g! / 255, hexToRgb(backFaceColor)?.b! / 255],
+            [hexToRgb(rightFaceColor)?.r! / 255, hexToRgb(rightFaceColor)?.g! / 255, hexToRgb(rightFaceColor)?.b! / 255],
+            [hexToRgb(bottomFaceColor)?.r! / 255, hexToRgb(bottomFaceColor)?.g! / 255, hexToRgb(bottomFaceColor)?.b! / 255],
+        ];
+
+
+        // Set the color of the faces
+        for (let face = 0; face < 4; face++) {
+            let faceColor = vertexColors[face];
+            for (let vertex = 0; vertex < 3; vertex++) {
+                colorsArray.current.push(...faceColor);
+            }
+        }
+
+        for (let face = 4; face < 5; face++) {
+            let faceColor = vertexColors[face];
+            for (let vertex = 0; vertex < 6; vertex++) {
+                colorsArray.current.push(...faceColor);
+            }
+        }
+        console.log("colorsArray.current");
+        console.log(colorsArray.current);
+
+    }
+
+
+    function prepareGeometricShape(cube: any) {
 
         // *** Send position data to the GPU ***
         let vBuffer = gl.current.createBuffer();
@@ -169,7 +237,7 @@ function App() {
     function addCube() {
 
         // *** Computes the cube ***
-        colorCube();
+        createAndColorCube();
 
         // If the form has all the fields field
         let valid = scaleFactor && xTranslation && yTranslation && zTranslation && xRotation && yRotation && zRotation;
@@ -195,11 +263,45 @@ function App() {
             }
             // Append the cube object to the array
             cubeArray.current.push(cube);
-            console.log(cubeArray.current);
         } else {
             alert("Please fill all the fields");
         }
     }
+
+    function addPyramid() {
+
+        // *** Computes the cube ***
+        createAndColorPyramid();
+
+        // If the form has all the fields field
+        let valid = scaleFactor && xTranslation && yTranslation && zTranslation && xRotation && yRotation && zRotation;
+        if (valid) {
+            // Create the cube object
+            let cube = {
+                scale: parseFloat(scaleFactor) / 100,
+                translation: {
+                    x: parseFloat(xTranslation) / 100,
+                    y: parseFloat(yTranslation) / 100,
+                    z: parseFloat(zTranslation) / 100
+                },
+                rotation: {
+                    x: parseFloat(xRotation) * (Math.PI / 180),
+                    y: parseFloat(yRotation) * (Math.PI / 180),
+                    z: parseFloat(zRotation) * (Math.PI / 180)
+                },
+                currentRotation: {
+                    x: 0,
+                    y: 0,
+                    z: 0,
+                }
+            }
+            // Append the cube object to the array
+            cubeArray.current.push(cube);
+        } else {
+            alert("Please fill all the fields");
+        }
+    }
+
 
     function render() {
 
@@ -208,7 +310,7 @@ function App() {
 
         //  Add the cubes to the canvas
         for (const cube of cubeArray.current) {
-            prepareCube(cube);
+            prepareGeometricShape(cube);
         }
 
         // Make the new frame
@@ -253,7 +355,8 @@ function App() {
             <option>Front</option>,
             <option>Left</option>,
             <option>Right</option>,
-            <option>Back</option>
+            <option>Back</option>,
+            <option>Bottom</option>
         ]
     }
 
@@ -395,7 +498,8 @@ function App() {
                         <div className="col m-2">
                             <button id="add_cube"
                                     onClick={() => {
-                                        addCube()
+                                        if (shape === "Cube") addCube()
+                                        else if (shape === "Pyramid") addPyramid()
                                     }}
                             >
                                 Add {shape}</button>
