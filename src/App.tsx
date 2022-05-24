@@ -398,7 +398,7 @@ function App() {
     useEffect(() => {
         let newNumberOfGeometryShapesDropdown: JSX.Element[] = [];
         let currentIndex = 0
-        newNumberOfGeometryShapesDropdown.push(<option value={420}>New geometric shape</option>)
+        newNumberOfGeometryShapesDropdown.push(<option value="420">New geometric shape</option>)
         for (const currentGeometryShape of objectsArray.current) {
             newNumberOfGeometryShapesDropdown.push(
                 <option value={currentIndex}>Geometric
@@ -419,7 +419,6 @@ function App() {
             setXRotation(defaultXRotation);
             setYRotation(defaultYRotation);
             setZRotation(defaultZRotation);
-
         } else {
             setXTranslation((objectsArray.current[parseInt(selectedGeometryToEdit)].translation.x * 100).toString());
             setYTranslation((objectsArray.current[parseInt(selectedGeometryToEdit)].translation.y * 100).toString());
@@ -432,9 +431,9 @@ function App() {
     }, [selectedGeometryToEdit])
 
     // Transformation button
-    let transformationButton;
+    let setTransformationButton;
     if (selectedGeometryToEdit !== "420") {
-        transformationButton = <button
+        setTransformationButton = <button
             onClick={(e) => {
                 objectsArray.current[parseInt(selectedGeometryToEdit)].scale = parseInt(scaleFactor) / 100
                 objectsArray.current[parseInt(selectedGeometryToEdit)].translation.x = parseInt(xTranslation) / 100
@@ -443,6 +442,20 @@ function App() {
             }}
         >
             Set transformation
+        </button>
+    }
+
+    let resetTransformationButton;
+    if (selectedGeometryToEdit !== "420") {
+        resetTransformationButton = <button
+            onClick={(e) => {
+                objectsArray.current[parseInt(selectedGeometryToEdit)].scale = parseInt(defaultScaleFactor) / 100
+                objectsArray.current[parseInt(selectedGeometryToEdit)].translation.x = parseInt(defaultXTranslation) / 100
+                objectsArray.current[parseInt(selectedGeometryToEdit)].translation.y = parseInt(defaultYTranslation) / 100
+                objectsArray.current[parseInt(selectedGeometryToEdit)].translation.z = parseInt(defaultZTranslation) / 100
+            }}
+        >
+            Reset transformation
         </button>
     }
 
@@ -471,6 +484,23 @@ function App() {
             }}
         >
             Stop animation
+        </button>
+    }
+
+    // Delete geometry button
+    let deleteGeometryButton;
+    if (selectedGeometryToEdit !== "420") {
+        deleteGeometryButton = <button
+            onClick={(e) => {
+                objectsArray.current.splice(parseInt(selectedGeometryToEdit), 1)
+                setSelectedGeometryToEdit("420")
+                const select = document.querySelector('#geometryToEdit');
+                // @ts-ignore
+                select!.value = '420'
+                setNumberOfGeometricObjectsAdded(numberOfGeometricObjectsAdded - 1)
+            }}
+        >
+            Delete geometry
         </button>
     }
 
@@ -638,7 +668,7 @@ function App() {
                             </div>
 
                             <div className="row m-2">
-                                <select onChange={(e) => {
+                                <select id="geometryToEdit" onChange={(e) => {
                                     setSelectedGeometryToEdit(e.target.value)
                                 }}>
                                     {numberOfGeometryShapesDropdown}
@@ -694,8 +724,16 @@ function App() {
                                 </div>
                             </div>
 
-                            <div className="col m-2">
-                                {transformationButton}
+                            <div className="col">
+                                <div className="row m-2">
+                                    {setTransformationButton}
+                                </div>
+                                <div className="row m-2">
+                                    {resetTransformationButton}
+                                </div>
+                                <div className="row m-2">
+                                    {deleteGeometryButton}
+                                </div>
                             </div>
 
                         </div>
