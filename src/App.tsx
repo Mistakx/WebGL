@@ -6,19 +6,26 @@ function App() {
 
     let pointsArray = useRef<any>([]);
     let colorsArray = useRef<any>([]);
+    let texCoordsArray = useRef<any>([]);
 
     let objectsArray = useRef<GeometryObject[]>([]);
+    let modelsArray = useRef<GeometryObject[]>([]);
 
     let gl = useRef<any>(null);
     let ctm = useRef<any>(null);
     let modelViewMatrix = useRef<any>(null);
     let program = useRef<any>(null);
 
+    //stuff to load the models
+    let model_src = useRef<any>("modelos/tiger.obj");
+    let model_texture = useRef<any>("modelos/tiger_texture.jpg");
+    let model_data = useRef<any>(null);
+
     window.onload = function () {
         init();
     }
 
-    function init() {
+   async function init() {
 
         // *** Get canvas ***
         const canvas: any = document.getElementById('gl-canvas');
@@ -27,6 +34,12 @@ function App() {
             alert('Webgl.current not supported');
             return;
         }
+
+        /*const model_content =  await loadObjResource(model_src);
+        var data =  parseOBJ(model_content);
+        pointsArray = data.position;
+        texCoordsArray = data.texcoord;
+        vertexNormals = data.normal;*/
 
         // *** Set viewport ***
         gl.current.viewport(0, 0, canvas.width, canvas.height)
@@ -40,6 +53,8 @@ function App() {
         program.current = initShaders(gl.current, "vertex-shader", "fragment-shader");
         gl.current.useProgram(program.current);
 
+
+
         // *** Render ***
         render();
     }
@@ -51,50 +66,83 @@ function App() {
 
         // Specify the coordinates to draw
         pointsArray.current[objectsArray.current.length] = [
-
-            // Front
-            0.5, 0.5, 0.5,
+            -.5, 0.5, 0.5,
+            -.5, -.5, 0.5,
             0.5, -.5, 0.5,
             -.5, 0.5, 0.5,
-            -.5, 0.5, 0.5,
             0.5, -.5, 0.5,
-            -.5, -.5, 0.5,
-            // Left
-            -.5, 0.5, 0.5,
-            -.5, -.5, 0.5,
-            -.5, 0.5, -.5,
-            -.5, 0.5, -.5,
-            -.5, -.5, 0.5,
-            -.5, -.5, -.5,
-            // Back
-            -.5, 0.5, -.5,
-            -.5, -.5, -.5,
-            0.5, 0.5, -.5,
-            0.5, 0.5, -.5,
-            -.5, -.5, -.5,
-            0.5, -.5, -.5,
-            // Right
-            0.5, 0.5, -.5,
-            0.5, -.5, -.5,
             0.5, 0.5, 0.5,
             0.5, 0.5, 0.5,
             0.5, -.5, 0.5,
             0.5, -.5, -.5,
-            // Top
             0.5, 0.5, 0.5,
+            0.5, -.5, -.5,
             0.5, 0.5, -.5,
-            -.5, 0.5, 0.5,
-            -.5, 0.5, 0.5,
+            0.5, -.5, 0.5,
+            -.5, -.5, 0.5,
+            -.5, -.5, -.5,
+            0.5, -.5, 0.5,
+            -.5, -.5, -.5,
+            0.5, -.5, -.5,
             0.5, 0.5, -.5,
             -.5, 0.5, -.5,
-            // Bottom
-            0.5, -.5, 0.5,
-            0.5, -.5, -.5,
-            -.5, -.5, 0.5,
-            -.5, -.5, 0.5,
-            0.5, -.5, -.5,
+            -.5, 0.5, 0.5,
+            0.5, 0.5, -.5,
+            -.5, 0.5, 0.5,
+            0.5, 0.5, 0.5,
             -.5, -.5, -.5,
+            -.5, 0.5, -.5,
+            0.5, 0.5, -.5,
+            -.5, -.5, -.5,
+            0.5, 0.5, -.5,
+            0.5, -.5, -.5,
+            -.5, 0.5, -.5,
+            -.5, -.5, -.5,
+            -.5, -.5, 0.5,
+            -.5, 0.5, -.5,
+            -.5, -.5, 0.5,
+            -.5, 0.5, 0.5,
         ];
+        //
+        texCoordsArray.current[objectsArray.current.length] = [
+            0, 0,
+            0, 1,
+            1, 1,
+            0, 0,
+            1, 1,
+            1, 0,
+            0, 0,
+            0, 1,
+            1, 1,
+            0, 0,
+            1, 1,
+            1, 0,
+            0, 0,
+            0, 1,
+            1, 1,
+            0, 0,
+            1, 1,
+            1, 0,
+            0, 0,
+            0, 1,
+            1, 1,
+            0, 0,
+            1, 1,
+            1, 0,
+            0, 0,
+            0, 1,
+            1, 1,
+            0, 0,
+            1, 1,
+            1, 0,
+            0, 0,
+            0, 1,
+            1, 1,
+            0, 0,
+            1, 1,
+            1, 0,
+        ];
+
 
         // Specify the colors of the faces
         let vertexColors = [
@@ -184,7 +232,7 @@ function App() {
 
     }
 
-    function prepareGeometricShape(cube: any, pointsArrayIndex: number, colorsArrayIndex: number) {
+    function prepareGeometricShape(cube: any, pointsArrayIndex: number, colorsArrayIndex: number, texCoordsArrayIndex: number) {
 
         // console.log("Preparing geometric shape")
         // console.log(pointsArray.current[0]);
@@ -208,6 +256,23 @@ function App() {
         let vColor = gl.current.getAttribLocation(program.current, "vColor");
         gl.current.enableVertexAttribArray(vColor);
         gl.current.vertexAttribPointer(vColor, 3, gl.current.FLOAT, false, 0, 0);
+
+        // *** Send texture data to the GPU ***
+        let tBuffer = gl.current.createBuffer();
+        gl.current.bindBuffer(gl.current.ARRAY_BUFFER, tBuffer);
+        gl.current.bufferData(gl.current.ARRAY_BUFFER, new Float32Array(texCoordsArray.current[texCoordsArrayIndex]), gl.current.STATIC_DRAW);
+
+        // *** Define the form of the data ***
+        let vTexCoord = gl.current.getAttribLocation(program.current, "vTexCoord");
+        gl.current.enableVertexAttribArray(vTexCoord);
+        gl.current.vertexAttribPointer(vTexCoord, 2, gl.current.FLOAT, false, 0, 0);
+
+// Set the image for the texture
+        let image = new Image();
+        image.src = require("./texture.png");
+        image.onload = function () {
+            configureTexture(image);
+        }
 
         // *** Get a pointer for the model viewer
         modelViewMatrix.current = gl.current.getUniformLocation(program.current, "modelViewMatrix");
@@ -237,6 +302,17 @@ function App() {
         // *** Draw the triangles ***
         gl.current.drawArrays(gl.current.TRIANGLES, 0, pointsArray.current[pointsArrayIndex].length / 3);
 
+    }
+
+    function configureTexture(image: any) {
+        let texture = gl.current.createTexture();
+        gl.current.bindTexture(gl.current.TEXTURE_2D, texture);
+        gl.current.pixelStorei(gl.current.UNPACK_FLIP_Y_WEBGL, true);
+        gl.current.texImage2D(gl.current.TEXTURE_2D, 0, gl.current.RGB, gl.current.RGB, gl.current.UNSIGNED_BYTE, image);
+        gl.current.generateMipmap(gl.current.TEXTURE_2D);
+        gl.current.texParameteri(gl.current.TEXTURE_2D, gl.current.TEXTURE_MIN_FILTER, gl.current.NEAREST_MIPMAP_LINEAR);
+        gl.current.texParameteri(gl.current.TEXTURE_2D, gl.current.TEXTURE_MAG_FILTER, gl.current.NEAREST);
+        gl.current.uniform1i(gl.current.getUniformLocation(program, "texture"), 0);
     }
 
     function addCube() {
@@ -318,7 +394,7 @@ function App() {
 
         //  Add the cubes to the canvas
         for (const cube of objectsArray.current) {
-            prepareGeometricShape(cube, currentIndex, currentIndex);
+            prepareGeometricShape(cube, currentIndex, currentIndex,currentIndex);
             currentIndex++
         }
 
