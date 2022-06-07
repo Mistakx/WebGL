@@ -7,6 +7,7 @@ function App() {
     let pointsArray = useRef<any>([]);
     let colorsArray = useRef<any>([]);
     let texCoordsArray = useRef<any>([]);
+    let vertexNormals = useRef<any>([]);
 
     let objectsArray = useRef<GeometryObject[]>([]);
     let modelsArray = useRef<GeometryObject[]>([]);
@@ -14,11 +15,17 @@ function App() {
     let gl = useRef<any>(null);
     let ctm = useRef<any>(null);
     let modelViewMatrix = useRef<any>(null);
+    let projMatrix = useRef<any>(null);
     let program = useRef<any>(null);
+    let ambientLightUniformLocation = useRef<any>(null);
+    let sunlightIntensityUniformLocation = useRef<any>(null);
+    let sunlightDirectionUniformLocation = useRef<any>(null);
+    let projMatUniformLocation = useRef<any>(null);
+
 
     //stuff to load the models
-    let model_src = useRef<any>("modelos/tiger.obj");
-    let model_texture = useRef<any>("modelos/tiger_texture.jpg");
+    let model_src = useRef<any>("models/bird.obj");
+    let model_texture = useRef<any>(require("./texture.png"));
     let model_data = useRef<any>(null);
 
     window.onload = function () {
@@ -35,11 +42,14 @@ function App() {
             return;
         }
 
+
         /*const model_content =  await loadObjResource(model_src);
         var data =  parseOBJ(model_content);
-        pointsArray = data.position;
-        texCoordsArray = data.texcoord;
-        vertexNormals = data.normal;*/
+        pointsArray.current.push(data.position);
+        texCoordsArray.current.push(data.texcoord);
+        vertexNormals.current.push(data.normal);*/
+
+        //normalize(pointsArray);// easier to visualize
 
         // *** Set viewport ***
         gl.current.viewport(0, 0, canvas.width, canvas.height)
@@ -52,8 +62,6 @@ function App() {
         // *** Initialize vertex and fragment shader ***
         program.current = initShaders(gl.current, "vertex-shader", "fragment-shader");
         gl.current.useProgram(program.current);
-
-
 
         // *** Render ***
         render();
@@ -142,6 +150,46 @@ function App() {
             1, 1,
             1, 0,
         ];
+        vertexNormals.current[objectsArray.current.length] = [
+            -.5, 0.5, 0.5,
+            -.5, -.5, 0.5,
+            0.5, -.5, 0.5,
+            -.5, 0.5, 0.5,
+            0.5, -.5, 0.5,
+            0.5, 0.5, 0.5,
+            0.5, 0.5, 0.5,
+            0.5, -.5, 0.5,
+            0.5, -.5, -.5,
+            0.5, 0.5, 0.5,
+            0.5, -.5, -.5,
+            0.5, 0.5, -.5,
+            0.5, -.5, 0.5,
+            -.5, -.5, 0.5,
+            -.5, -.5, -.5,
+            0.5, -.5, 0.5,
+            -.5, -.5, -.5,
+            0.5, -.5, -.5,
+            0.5, 0.5, -.5,
+            -.5, 0.5, -.5,
+            -.5, 0.5, 0.5,
+            0.5, 0.5, -.5,
+            -.5, 0.5, 0.5,
+            0.5, 0.5, 0.5,
+            -.5, -.5, -.5,
+            -.5, 0.5, -.5,
+            0.5, 0.5, -.5,
+            -.5, -.5, -.5,
+            0.5, 0.5, -.5,
+            0.5, -.5, -.5,
+            -.5, 0.5, -.5,
+            -.5, -.5, -.5,
+            -.5, -.5, 0.5,
+            -.5, 0.5, -.5,
+            -.5, -.5, 0.5,
+            -.5, 0.5, 0.5];
+
+
+
 
 
         // Specify the colors of the faces
@@ -267,7 +315,28 @@ function App() {
         gl.current.enableVertexAttribArray(vTexCoord);
         gl.current.vertexAttribPointer(vTexCoord, 2, gl.current.FLOAT, false, 0, 0);
 
-// Set the image for the texture
+
+        // *** Send normal vector data to the GPU ***
+        var nBuffer = gl.current.createBuffer();
+        gl.current.bindBuffer(gl.current.ARRAY_BUFFER, nBuffer);
+        gl.current.bufferData(gl.current.ARRAY_BUFFER, new Float32Array(vertexNormals.current[texCoordsArrayIndex]), gl.current.STATIC_DRAW);
+
+        var vNormData = gl.current.getAttribLocation(program.current, "aNormal");
+        gl.current.vertexAttribPointer(vNormData, 3, gl.current.FLOAT, gl.current.TRUE, 0, 0);
+        gl.current.enableVertexAttribArray(vNormData);
+
+
+        /*lighting information*/
+        ambientLightUniformLocation.current  =  gl.current.getUniformLocation(program.current,'fambientLightIntensity');
+        sunlightIntensityUniformLocation.current  =  gl.current.getUniformLocation(program.current,'sun.color');
+        sunlightDirectionUniformLocation.current  =  gl.current.getUniformLocation(program.current,'sun.direction');
+
+        // Initial lighting setup
+        gl.current.uniform3f(ambientLightUniformLocation.current ,0.2,0.2,0.2);
+        gl.current.uniform3f(sunlightIntensityUniformLocation.current ,1,1,1);
+        gl.current.uniform3f(sunlightDirectionUniformLocation.current ,-1,0,0);
+
+        // Set the image for the texture
         let image = new Image();
         image.src = require("./texture.png");
         image.onload = function () {
@@ -285,6 +354,29 @@ function App() {
         // @ts-ignore
         mat4.translate(ctm.current, ctm.current, [cube.translation.x, cube.translation.y, cube.translation.z]);
 
+
+        // @ts-ignore
+        projMatUniformLocation.current = gl.current.getUniformLocation(program.current, 'projectionMatrix');
+
+        projMatrix.current = new Float32Array(16); // 4x4
+        // @ts-ignore
+        mat4.identity(projMatrix.current);
+        // @ts-ignore
+        mat4.lookAt(projMatrix.current,[0,0,-3],[0,0,0],[0,1,0]);
+        // @ts-ignore
+        mat4.perspective(projMatrix.current,glMatrix.toRadian(60),1,0.01,1000.0);
+
+        // @ts-ignore
+        gl.current.uniformMatrix4fv( projMatUniformLocation.current , false, projMatrix.current);
+
+        // after the implementation of the prespective we need to ajust the position
+        // so that the we can see the object...
+
+        // @ts-ignore
+        mat4.translate(ctm.current,ctm.current,[0,0,-2]);
+        // @ts-ignore
+        mat4.rotateX(ctm.current, ctm.current, cube.currentRotation.x);
+
         // *** Rotate cube (if necessary) ***
         cube.currentRotation.x += cube.rotation.x;
         cube.currentRotation.y += cube.rotation.y;
@@ -295,6 +387,7 @@ function App() {
         mat4.rotateY(ctm.current, ctm.current, cube.currentRotation.y);
         // @ts-ignore
         mat4.rotateZ(ctm.current, ctm.current, cube.currentRotation.z);
+
 
         // *** Transfer the information to the model viewer ***
         gl.current.uniformMatrix4fv(modelViewMatrix.current, false, ctm.current);
@@ -312,7 +405,7 @@ function App() {
         gl.current.generateMipmap(gl.current.TEXTURE_2D);
         gl.current.texParameteri(gl.current.TEXTURE_2D, gl.current.TEXTURE_MIN_FILTER, gl.current.NEAREST_MIPMAP_LINEAR);
         gl.current.texParameteri(gl.current.TEXTURE_2D, gl.current.TEXTURE_MAG_FILTER, gl.current.NEAREST);
-        gl.current.uniform1i(gl.current.getUniformLocation(program, "texture"), 0);
+        gl.current.uniform1i(gl.current.getUniformLocation(program.current, "texture"), 0);
     }
 
     function addCube() {
@@ -816,9 +909,7 @@ function App() {
 
                     </div>
 
-
                 </div>
-
 
             </div>
 
