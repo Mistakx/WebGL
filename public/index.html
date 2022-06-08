@@ -29,7 +29,7 @@
     <script id="vertex-shader" type="x-shader/x-vertex">
       precision mediump float;
 
-        attribute vec3 vColor;
+      attribute vec3 vColor;
       attribute vec3 vPosition;
       attribute vec2 vTexCoord;
       varying vec3 fColor;
@@ -41,10 +41,10 @@
       attribute vec3 aNormal;
       varying vec3 fNormal;
       void main() {
-           fColor = vColor;
-         fNormal =  (modelViewMatrix* vec4(aNormal,0.0)).xyz;
+         fColor = vColor;
          fTexCoord = vTexCoord;
-         //gl_Position = modelViewMatrix * vec4(vPosition, 1.0);
+         fNormal =  (modelViewMatrix* vec4(aNormal,0.0)).xyz;
+
          gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 1.0);
       }
 
@@ -71,8 +71,7 @@
         vec3 normal =  normalize(fNormal);
         vec3 lightIntensity = fambientLightIntensity +(sun.color * max(dot(normal,sunlightDirection),0.0));
 
-        gl_FragColor = vec4(texel.rgb * lightIntensity * fColor , texel.a);
-
+        gl_FragColor = vec4(texel.rgb * lightIntensity + lightIntensity * fColor , texel.a);
       }
 
 
