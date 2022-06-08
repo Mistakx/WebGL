@@ -1,5 +1,6 @@
 import React, {useEffect, useRef} from "react";
 import initShaders from "./initShaders";
+import parseOBJ from "./utils";
 import {GeometryObject} from "../models/GeometryObject";
 
 function App() {
@@ -9,10 +10,12 @@ function App() {
     let texCoordsArray = useRef<any>([]);
     let vertexNormals = useRef<any>([]);
 
+    let model_texture = useRef<any>([]);
+
     let objectsArray = useRef<GeometryObject[]>([]);
-    let modelsArray = useRef<GeometryObject[]>([]);
 
     let gl = useRef<any>(null);
+
     let ctm = useRef<any>(null);
     let modelViewMatrix = useRef<any>(null);
     let projMatrix = useRef<any>(null);
@@ -23,10 +26,7 @@ function App() {
     let projMatUniformLocation = useRef<any>(null);
 
 
-    //stuff to load the models
-    let model_src = useRef<any>("models/bird.obj");
-    let model_texture = useRef<any>(require("./texture.png"));
-    let model_data = useRef<any>(null);
+
 
     window.onload = function () {
         init();
@@ -41,15 +41,6 @@ function App() {
             alert('Webgl.current not supported');
             return;
         }
-
-
-        /*const model_content =  await loadObjResource(model_src);
-        var data =  parseOBJ(model_content);
-        pointsArray.current.push(data.position);
-        texCoordsArray.current.push(data.texcoord);
-        vertexNormals.current.push(data.normal);*/
-
-        //normalize(pointsArray);// easier to visualize
 
         // *** Set viewport ***
         gl.current.viewport(0, 0, canvas.width, canvas.height)
@@ -66,6 +57,45 @@ function App() {
         // *** Render ***
         render();
     }
+
+    async function createModel(modelo:string) {
+        model_texture.current[objectsArray.current.length]=[];
+        let model_content;
+        switch (modelo){
+            case "Astronaut":
+                model_texture.current[objectsArray.current.length].push(require("./models/Astronaut.png"));
+                model_content =  await loadObjResource(require("./models/Astronaut.obj"));
+                break;
+            case "Bird":
+                model_texture.current[objectsArray.current.length].push(require("./models/bird.jpg"));
+                model_content =  await loadObjResource(require("./models/bird.obj"));
+                break;
+            case "Cat":
+                model_texture.current[objectsArray.current.length].push(require("./models/cat_texture.png"));
+                model_content =  await loadObjResource(require("./models/cat.obj"));
+                break;
+            case "Tiger":
+                model_texture.current[objectsArray.current.length].push(require("./models/tiger_texture.jpg"));
+                model_content =  await loadObjResource(require("./models/tiger.obj"));
+                break;
+            case "Trophy":
+                model_texture.current[objectsArray.current.length].push(require("./models/trophy.jpg"));
+                model_content =  await loadObjResource(require("./models/trophy.obj"));
+                break;
+        }
+
+        pointsArray.current[objectsArray.current.length]=[];
+        texCoordsArray.current[objectsArray.current.length]=[];
+        vertexNormals.current[objectsArray.current.length]=[];
+
+        let data = await parseOBJ(model_content);
+        pointsArray.current[objectsArray.current.length].push(...data.position);
+        texCoordsArray.current[objectsArray.current.length].push(...data.texcoord);
+        vertexNormals.current[objectsArray.current.length].push(...data.normal);
+
+    }
+
+
 
     function createAndColorCube() {
 
@@ -111,8 +141,7 @@ function App() {
             -.5, -.5, 0.5,
             -.5, 0.5, 0.5,
         ];
-        //
-        texCoordsArray.current[objectsArray.current.length] = [
+        /*texCoordsArray.current[objectsArray.current.length] = [
             0, 0,
             0, 1,
             1, 1,
@@ -149,7 +178,7 @@ function App() {
             0, 0,
             1, 1,
             1, 0,
-        ];
+        ];*/
         vertexNormals.current[objectsArray.current.length] = [
             -.5, 0.5, 0.5,
             -.5, -.5, 0.5,
@@ -188,10 +217,6 @@ function App() {
             -.5, -.5, 0.5,
             -.5, 0.5, 0.5];
 
-
-
-
-
         // Specify the colors of the faces
         let vertexColors = [
             [hexToRgb(frontFaceColor)?.r! / 255, hexToRgb(frontFaceColor)?.g! / 255, hexToRgb(frontFaceColor)?.b! / 255],
@@ -220,38 +245,64 @@ function App() {
 
         // Specify the coordinates to draw
         pointsArray.current[objectsArray.current.length] = [
-            // Pyramid front
-            -.5, -.5, .5,
-            0.5, -.5, .5,
-            0, 0.5, 0,
+            // Front face
+            0.0, 0.5, 0.0,
+            -0.5, -0.5, 0.5,
+            0.5, -0.5, 0.5,
 
-            // Pyramid left
-            -.5, -.5, .5,
-            -.5, -.5, -.5,
-            0, 0.5, 0,
+            // Right face
+            0.0, 0.5, 0.0,
+            0.5, -0.5, 0.5,
+            0.5, -0.5, -0.5,
 
-            // Pyramid back
-            -.5, -.5, -.5,
-            0.5, -.5, -.5,
-            0, 0.5, 0,
+            // Back face
+            0.0, 0.5, 0.0,
+            0.5, -0.5, -0.5,
+            -0.5, -0.5, -0.5,
 
-            // Pyramid right
-            0.5, -.5, .5,
-            0.5, -.5, -.5,
-            0, 0.5, 0,
-
-            // Pyramid bottom right
-            -.5, -.5, .5,
-            0.5, -.5, .5,
-            0.5, -.5, -.5,
-
-            // Pyramid bottom left
-            -.5, -.5, -.5,
-            0.5, -.5, -.5,
-            -.5, -.5, .5,
+            // Left face
+            0.0, 0.5, 0.0,
+            -0.5, -0.5, -0.5,
+            -0.5, -0.5, 0.5,
 
 
+            -0.5, -0.5, -0.5,
+            0.5, -0.5, -0.5,
+            0.5, -0.5, 0.5,
+            -0.5, -0.5, -0.5,
+            0.5, -0.5, 0.5,
+            -0.5, -0.5, 0.5,
         ];
+        // Front face
+        vertexNormals.current[objectsArray.current.length]=[
+            0.0, 0.4472135901451111, 0.8944271802902222,
+            0.0, 0.4472135901451111, 0.8944271802902222,
+            0.0, 0.4472135901451111, 0.8944271802902222,
+
+            // Right face
+            0.8944271802902222, 0.4472135901451111, 0.0,
+            0.8944271802902222, 0.4472135901451111, 0.0,
+            0.8944271802902222, 0.4472135901451111, 0.0,
+
+            // Back face
+            0.0, 0.4472135901451111, -0.8944271802902222,
+            0.0, 0.4472135901451111, -0.8944271802902222,
+            0.0, 0.4472135901451111, -0.8944271802902222,
+
+            // Left face
+            -0.8944271802902222, 0.4472135901451111, 0.0,
+            -0.8944271802902222, 0.4472135901451111, 0.0,
+            -0.8944271802902222, 0.4472135901451111, 0.0,
+
+            // Bottom face - non-triangle strip
+            0.0, -1.0, 0.0,
+            0.0, -1.0, 0.0,
+            0.0, -1.0, 0.0,
+            0.0, -1.0, 0.0,
+            0.0, -1.0, 0.0,
+            0.0, -1.0, 0.0
+    ];
+
 
         // Specify the colors of the faces
         let vertexColors = [
@@ -280,7 +331,14 @@ function App() {
 
     }
 
-    function prepareGeometricShape(cube: any, pointsArrayIndex: number, colorsArrayIndex: number, texCoordsArrayIndex: number) {
+    async function loadObjResource(location: string) {
+        const response = await fetch(location);
+        const text = await response.text();
+        return text;
+    }
+
+
+    async function prepareGeometricShape(cube: any, pointsArrayIndex: number, colorsArrayIndex: number, texCoordsArrayIndex: number,model_textureArrayIndex: number) {
 
         // console.log("Preparing geometric shape")
         // console.log(pointsArray.current[0]);
@@ -313,7 +371,7 @@ function App() {
         // *** Define the form of the data ***
         let vTexCoord = gl.current.getAttribLocation(program.current, "vTexCoord");
         gl.current.enableVertexAttribArray(vTexCoord);
-        gl.current.vertexAttribPointer(vTexCoord, 2, gl.current.FLOAT, false, 0, 0);
+        gl.current.vertexAttribPointer(vTexCoord, 3, gl.current.FLOAT, false, 0, 0);
 
 
         // *** Send normal vector data to the GPU ***
@@ -336,12 +394,14 @@ function App() {
         gl.current.uniform3f(sunlightIntensityUniformLocation.current ,1,1,1);
         gl.current.uniform3f(sunlightDirectionUniformLocation.current ,-1,0,0);
 
+
         // Set the image for the texture
         let image = new Image();
-        image.src = require("./texture.png");
+        image.src = model_texture.current[model_textureArrayIndex];
         image.onload = function () {
             configureTexture(image);
         }
+
 
         // *** Get a pointer for the model viewer
         modelViewMatrix.current = gl.current.getUniformLocation(program.current, "modelViewMatrix");
@@ -375,6 +435,8 @@ function App() {
         // @ts-ignore
         mat4.translate(ctm.current,ctm.current,[0,0,-2]);
         // @ts-ignore
+        mat4.scale(ctm.current, ctm.current, [cube.scale, cube.scale, cube.scale]);
+        // @ts-ignore
         mat4.rotateX(ctm.current, ctm.current, cube.currentRotation.x);
 
         // *** Rotate cube (if necessary) ***
@@ -392,8 +454,10 @@ function App() {
         // *** Transfer the information to the model viewer ***
         gl.current.uniformMatrix4fv(modelViewMatrix.current, false, ctm.current);
 
+
         // *** Draw the triangles ***
         gl.current.drawArrays(gl.current.TRIANGLES, 0, pointsArray.current[pointsArrayIndex].length / 3);
+
 
     }
 
@@ -407,6 +471,43 @@ function App() {
         gl.current.texParameteri(gl.current.TEXTURE_2D, gl.current.TEXTURE_MAG_FILTER, gl.current.NEAREST);
         gl.current.uniform1i(gl.current.getUniformLocation(program.current, "texture"), 0);
     }
+
+
+    async function addModel(modelo:string){
+
+        await createModel(modelo);
+        // If the form has all the fields field
+        let valid = scaleFactor && xTranslation && yTranslation && zTranslation && xRotation && yRotation && zRotation;
+        if (valid) {
+            // Create the cube object
+            let model = {
+                scale: parseFloat(scaleFactor) / 100,
+                translation: {
+                    x: parseFloat(xTranslation) / 100,
+                    y: parseFloat(yTranslation) / 100,
+                    z: parseFloat(zTranslation) / 100
+                },
+                rotation: {
+                    x: parseFloat(xRotation) * (Math.PI / 180),
+                    y: parseFloat(yRotation) * (Math.PI / 180),
+                    z: parseFloat(zRotation) * (Math.PI / 180)
+                },
+                currentRotation: {
+                    x: 0,
+                    y: 0,
+                    z: 0,
+                }
+            }
+            // Append the cube object to the array
+            objectsArray.current.push(model);
+
+            setNumberOfGeometricObjectsAdded(numberOfGeometricObjectsAdded + 1);
+
+        } else {
+            alert("Please fill all the fields");
+        }
+    }
+
 
     function addCube() {
 
@@ -478,6 +579,7 @@ function App() {
         }
     }
 
+
     function render() {
 
         // Clear the canvas
@@ -485,9 +587,9 @@ function App() {
 
         let currentIndex = 0;
 
-        //  Add the cubes to the canvas
-        for (const cube of objectsArray.current) {
-            prepareGeometricShape(cube, currentIndex, currentIndex,currentIndex);
+        //  Add the objects to the canvas
+        for (const object of objectsArray.current) {
+            prepareGeometricShape(object, currentIndex, currentIndex,currentIndex,currentIndex);
             currentIndex++
         }
 
@@ -507,6 +609,8 @@ function App() {
 
 
     const [shape, setShape] = React.useState<"Cube" | "Pyramid">("Cube");
+    const [object, setObject] = React.useState<"Astronaut" | "Bird"| "Cat" | "Tiger" | "Trophy">("Astronaut");
+
 
     const defaultXRotation = "0";
     const defaultYRotation = "0";
@@ -515,7 +619,30 @@ function App() {
     const [yRotation, setYRotation] = React.useState(defaultYRotation);
     const [zRotation, setZRotation] = React.useState(defaultZRotation);
 
-    const defaultScaleFactor = "100";
+
+
+    const defaultRambient = "0.2";
+    const defaultGambient = "0.2";
+    const defaultBambient = "0.2";
+    const defaultRsun = "1";
+    const defaultGsun = "1";
+    const defaultBsun = "1";
+    const defaultXdirection = "-1";
+    const defaultYdirection = "0";
+    const defaultZdirection= "0";
+    const [rAmbient, setRAmbient] = React.useState(defaultRambient);
+    const [gAmbient, setGAmbient] = React.useState(defaultGambient);
+    const [bAmbient, setBAmbient] = React.useState(defaultBambient);
+    const [rSun, setRSun] = React.useState(defaultRsun);
+    const [gSun, setGSun] = React.useState(defaultGsun);
+    const [bSun, setBSun] = React.useState(defaultBsun);
+    const [xSun, setXSun] = React.useState(defaultXdirection);
+    const [ySun, setYSun] = React.useState(defaultYdirection);
+    const [zSun, setZSun] = React.useState(defaultZdirection);
+
+
+
+    const defaultScaleFactor = "30";
     const [scaleFactor, setScaleFactor] = React.useState(defaultScaleFactor);
 
     const defaultXTranslation = "0";
@@ -655,6 +782,21 @@ function App() {
             Stop animation
         </button>
     }
+
+    // Set Lighting button
+    let setLightButton;
+    setLightButton = <button
+            onClick={(e) => {
+
+                gl.current.uniform3f(ambientLightUniformLocation,parseInt(rAmbient),parseInt(gAmbient),parseInt(bAmbient));
+                gl.current.uniform3f(sunlightIntensityUniformLocation,parseInt(rSun),parseInt(gSun),parseInt(bSun));
+                gl.current.uniform3f(sunlightDirectionUniformLocation,parseInt(xSun),parseInt(ySun),parseInt(zSun));
+
+            }}
+        >
+            Set Lighting
+        </button>
+
 
     // Delete geometry button
     let deleteGeometryButton;
@@ -847,6 +989,51 @@ function App() {
 
 
                     </div>
+                    {/*Object Model*/}
+                    <div className="row border border-primary m-3">
+
+                        <div className="col">
+                            <div className="row">
+                                <div className="col m-2">
+                                    <label>Choose an object:</label>
+                                    <select name="objectToAdd" id="objectToAdd"
+                                            onChange={(e) => {
+                                                setObject(e.target.value as "Astronaut" | "Bird"| "Cat" | "Tiger" | "Trophy")
+                                                console.log("Set object to " + e.target.value)
+                                            }}>
+                                        <option>Astronaut</option>
+                                        <option>Bird</option>
+                                        <option>Cat</option>
+                                        <option>Tiger</option>
+                                        <option>Trophy</option>
+                                    </select>
+                                    <br/>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div className="col">
+
+                            <div className="row m-2">
+                                <button id="add_object"
+                                        onClick={() => {
+                                            if (selectedGeometryToEdit === "420") {
+                                                if (numberOfGeometricObjectsAdded > 4) alert("Already added 5 objects")
+                                                else {
+                                                     addModel(object)
+                                                }
+                                            } else alert("Please select the choice to add a new geometric object.")
+                                        }}
+                                >
+                                    Add {object}
+                                </button>
+                            </div>
+
+                        </div>
+
+
+                    </div>
 
                     {/*Scaling and translation*/}
                     <div className="row border border-primary m-3">
@@ -908,6 +1095,86 @@ function App() {
                         </div>
 
                     </div>
+
+
+
+
+                    <div className="row border border-primary m-3">
+                        {/*Translation*/}
+                        <div className="row">
+                            <div className="col">
+                                <h2>Light</h2>
+                                <label>Ambient Light intensity</label><br/>
+                                R: <input type="number" id="rAmbient" value={rAmbient}
+                                          onChange={(e) => {
+                                              e.preventDefault()
+                                              setRAmbient(e.target.value)
+                                          }}
+                            />  <br/>
+                                G: <input type="number" id="gAmbient" value={gAmbient}
+                                          onChange={(e) => {
+                                              e.preventDefault()
+                                              setGAmbient(e.target.value)
+                                          }}
+                            />  <br/>
+                                B: <input type="number" id="bAmbient" value={bAmbient}
+                                          onChange={(e) => {
+                                              e.preventDefault()
+                                              setBAmbient(e.target.value)
+                                          }}
+                            />  <br/>
+
+
+                                <label>Sun Light intensity</label><br/>
+                                R: <input type="number" id="rSun" value={rSun}
+                                          onChange={(e) => {
+                                              e.preventDefault()
+                                              setRSun(e.target.value)
+                                          }}
+                            />  <br/>
+                                G: <input type="number" id="gSun" value={gSun}
+                                          onChange={(e) => {
+                                              e.preventDefault()
+                                              setGSun(e.target.value)
+                                          }}
+                            />  <br/>
+                                B: <input type="number" id="bSun" value={bSun}
+                                          onChange={(e) => {
+                                              e.preventDefault()
+                                              setBSun(e.target.value)
+                                          }}
+                            />  <br/>
+
+
+                                <label>Sun Light direction</label><br/>
+                                X: <input type="number" id="xSun" value={xSun}
+                                          onChange={(e) => {
+                                              e.preventDefault()
+                                              setXSun(e.target.value)
+                                          }}
+                            />  <br/>
+                                Y: <input type="number" id="ySun" value={ySun}
+                                          onChange={(e) => {
+                                              e.preventDefault()
+                                              setYSun(e.target.value)
+                                          }}
+                            />  <br/>
+                                Z: <input type="number" id="zSun" value={zSun}
+                                          onChange={(e) => {
+                                              e.preventDefault()
+                                              setZSun(e.target.value)
+                                          }}
+                            />  <br/>
+                                <div className="col">
+                                    <div className="row m-2">
+                                        {setLightButton}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
 
                 </div>
 
