@@ -1,5 +1,4 @@
 async function loadTextResource(location) {
-
         var response = await fetch(location);
         const text = await response.text();
         return text;
@@ -29,6 +28,11 @@ export async function loadObjResource(location) {
         return text;
     }
 
+/**
+ * Parses the object file, creating the respective arrays.
+ * @param text is the text of the file to be parsed.
+ * @returns {{normal: *[], texcoord: *[], position: *[]}}
+ */
 export default function parseOBJ(text) {
         // because indices are base 1 let's just fill in the 0th data
         const objPositions = [[0, 0, 0]];
@@ -48,6 +52,7 @@ export default function parseOBJ(text) {
             [],   // texcoords
             [],   // normals
         ];
+
 
          function addVertex(vert) {
             const ptn = vert.split('/');

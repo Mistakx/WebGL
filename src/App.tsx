@@ -4,34 +4,47 @@ import parseOBJ from "./utils";
 import {GeometryObject} from "../models/GeometryObject";
 
 function App() {
-
+    //Arrays
+    /** pointsArray is the array of the object's points coordinates */
     let pointsArray = useRef<any>([]);
+    /** colorsArray is the array of the object's colors to each vertice */
     let colorsArray = useRef<any>([]);
+    /** texCoordsArray is the array of the object's textures points */
     let texCoordsArray = useRef<any>([]);
+    /** texCoordsArray is the array of the object's textures points */
     let vertexNormals = useRef<any>([]);
-
+    /** model_texture is array of the object's texture */
     let model_texture = useRef<any>([]);
-
+    /** objectsArray is the array that contains every object object */
     let objectsArray = useRef<GeometryObject[]>([]);
 
-    let gl = useRef<any>(null);
+    //Light
+    /** variable that represents the ambient light intensity */
+    let ambientLightUniformLocation = useRef<any>(null);
+    /** variable that represents the sun light intensity */
+    let sunlightIntensityUniformLocation = useRef<any>(null);
+    /** variable that represents the sun light direction */
+    let sunlightDirectionUniformLocation = useRef<any>(null);
+    /** variable that represents the sun light intensity */
+    let projMatUniformLocation = useRef<any>(null);
 
+    //webgl
+    let gl = useRef<any>(null);
     let ctm = useRef<any>(null);
     let modelViewMatrix = useRef<any>(null);
     let projMatrix = useRef<any>(null);
     let program = useRef<any>(null);
-    let ambientLightUniformLocation = useRef<any>(null);
-    let sunlightIntensityUniformLocation = useRef<any>(null);
-    let sunlightDirectionUniformLocation = useRef<any>(null);
-    let projMatUniformLocation = useRef<any>(null);
 
-
-
-
+    /**
+     * initializes the program when the page is loaded
+     */
     window.onload = function () {
         init();
     }
 
+    /**
+     * initializes the program and sets up the canvas.
+     */
    async function init() {
 
         // *** Get canvas ***
@@ -58,6 +71,10 @@ function App() {
         render();
     }
 
+    /**
+     * Creates the specified model, creating the necessary arrays of points.
+     * @param modelo is the name of the model to be created.
+     */
     async function createModel(modelo:string) {
         model_texture.current[objectsArray.current.length]=[];
         let model_content;
@@ -78,106 +95,99 @@ function App() {
                 model_texture.current[objectsArray.current.length].push(require("./models/tiger_texture.jpg"));
                 model_content =  await loadObjResource(require("./models/tiger.obj"));
                 break;
-            case "Trophy":
-                model_texture.current[objectsArray.current.length].push(require("./models/trophy.jpg"));
-                model_content =  await loadObjResource(require("./models/trophy.obj"));
-                break;
-        }
 
+        }
         pointsArray.current[objectsArray.current.length]=[];
         texCoordsArray.current[objectsArray.current.length]=[];
         vertexNormals.current[objectsArray.current.length]=[];
 
-        let data = await parseOBJ(model_content);
+        let data = parseOBJ(model_content);
         pointsArray.current[objectsArray.current.length].push(...data.position);
         texCoordsArray.current[objectsArray.current.length].push(...data.texcoord);
         vertexNormals.current[objectsArray.current.length].push(...data.normal);
-
     }
 
-
-
+    /**
+     * Creates and colors the cube.
+     */
     function createAndColorCube() {
-
-        // console.log("objectsArray.current.length")
-        // console.log(objectsArray.current.length)
 
         // Specify the coordinates to draw
         pointsArray.current[objectsArray.current.length] = [
-            -.5, 0.5, 0.5,
-            -.5, -.5, 0.5,
-            0.5, -.5, 0.5,
-            -.5, 0.5, 0.5,
-            0.5, -.5, 0.5,
-            0.5, 0.5, 0.5,
-            0.5, 0.5, 0.5,
-            0.5, -.5, 0.5,
-            0.5, -.5, -.5,
-            0.5, 0.5, 0.5,
-            0.5, -.5, -.5,
-            0.5, 0.5, -.5,
-            0.5, -.5, 0.5,
-            -.5, -.5, 0.5,
-            -.5, -.5, -.5,
-            0.5, -.5, 0.5,
-            -.5, -.5, -.5,
-            0.5, -.5, -.5,
-            0.5, 0.5, -.5,
-            -.5, 0.5, -.5,
-            -.5, 0.5, 0.5,
-            0.5, 0.5, -.5,
-            -.5, 0.5, 0.5,
-            0.5, 0.5, 0.5,
-            -.5, -.5, -.5,
-            -.5, 0.5, -.5,
-            0.5, 0.5, -.5,
-            -.5, -.5, -.5,
-            0.5, 0.5, -.5,
-            0.5, -.5, -.5,
-            -.5, 0.5, -.5,
-            -.5, -.5, -.5,
-            -.5, -.5, 0.5,
-            -.5, 0.5, -.5,
-            -.5, -.5, 0.5,
-            -.5, 0.5, 0.5,
+            -1, 1, 1,
+            -1, -1, 1,
+            1, -1, 1,
+            -1, 1, 1,
+            1, -1, 1,
+            1, 1, 1,
+            1, 1, 1,
+            1, -1, 1,
+            1, -1, -1,
+            1, 1, 1,
+            1, -1, -1,
+            1, 1, -1,
+            1, -1, 1,
+            -1, -1, 1,
+            -1, -1, -1,
+            1, -1, 1,
+            -1, -1, -1,
+            1, -1, -1,
+            1, 1, -1,
+            -1, 1, -1,
+            -1, 1, 1,
+            1, 1, -1,
+            -1, 1, 1,
+            1, 1, 1,
+            -1, -1, -1,
+            -1, 1, -1,
+            1, 1, -1,
+            -1, -1, -1,
+            1, 1, -1,
+            1, -1, -1,
+            -1, 1, -1,
+            -1, -1, -1,
+            -1, -1, 1,
+            -1, 1, -1,
+            -1, -1, 1,
+            -1, 1, 1,
         ];
         vertexNormals.current[objectsArray.current.length] = [
-            -.5, 0.5, 0.5,
-            -.5, -.5, 0.5,
-            0.5, -.5, 0.5,
-            -.5, 0.5, 0.5,
-            0.5, -.5, 0.5,
-            0.5, 0.5, 0.5,
-            0.5, 0.5, 0.5,
-            0.5, -.5, 0.5,
-            0.5, -.5, -.5,
-            0.5, 0.5, 0.5,
-            0.5, -.5, -.5,
-            0.5, 0.5, -.5,
-            0.5, -.5, 0.5,
-            -.5, -.5, 0.5,
-            -.5, -.5, -.5,
-            0.5, -.5, 0.5,
-            -.5, -.5, -.5,
-            0.5, -.5, -.5,
-            0.5, 0.5, -.5,
-            -.5, 0.5, -.5,
-            -.5, 0.5, 0.5,
-            0.5, 0.5, -.5,
-            -.5, 0.5, 0.5,
-            0.5, 0.5, 0.5,
-            -.5, -.5, -.5,
-            -.5, 0.5, -.5,
-            0.5, 0.5, -.5,
-            -.5, -.5, -.5,
-            0.5, 0.5, -.5,
-            0.5, -.5, -.5,
-            -.5, 0.5, -.5,
-            -.5, -.5, -.5,
-            -.5, -.5, 0.5,
-            -.5, 0.5, -.5,
-            -.5, -.5, 0.5,
-            -.5, 0.5, 0.5];
+            -1, 1, 1,
+            -1, -1, 1,
+            1, -1, 1,
+            -1, 1, 1,
+            1, -1, 1,
+            1, 1, 1,
+            1, 1, 1,
+            1, -1, 1,
+            1, -1, -1,
+            1, 1, 1,
+            1, -1, -1,
+            1, 1, -1,
+            1, -1, 1,
+            -1, -1, 1,
+            -1, -1, -1,
+            1, -1, 1,
+            -1, -1, -1,
+            1, -1, -1,
+            1, 1, -1,
+            -1, 1, -1,
+            -1, 1, 1,
+            1, 1, -1,
+            -1, 1, 1,
+            1, 1, 1,
+            -1, -1, -1,
+            -1, 1, -1,
+            1, 1, -1,
+            -1, -1, -1,
+            1, 1, -1,
+            1, -1, -1,
+            -1, 1, -1,
+            -1, -1, -1,
+            -1, -1, 1,
+            -1, 1, -1,
+            -1, -1, 1,
+            -1, 1, 1];
 
         // Specify the colors of the faces
         let vertexColors = [
@@ -197,12 +207,11 @@ function App() {
                 colorsArray.current[objectsArray.current.length].push(...faceColor);
             }
         }
-
-        // console.log("New color array")
-        // console.log(colorsArray.current)
-
     }
 
+    /**
+     * Creates and colors the pyramid.
+     */
     function createAndColorPyramid() {
 
         // Specify the coordinates to draw
@@ -292,17 +301,25 @@ function App() {
 
     }
 
+    /**
+     * turns the object file content to text.
+     * @param location is the path of the file to be loaded.
+     */
     async function loadObjResource(location: string) {
         const response = await fetch(location);
         const text = await response.text();
         return text;
     }
 
-
+    /**
+     * Prepares the object and draws it on the canvas.
+     * @param cube is the current object to be loaded.
+     * @param pointsArrayIndex is the index of the array of vertices of the object we are loading.
+     * @param colorsArrayIndex is the index of the array of colors of the object we are loading.
+     * @param texCoordsArrayIndex is the index of the array of texture's points of the object we are loading.
+     * @param model_textureArrayIndex is the index of the array of texture of the object we are loading.
+     */
     async function prepareGeometricShape(cube: any, pointsArrayIndex: number, colorsArrayIndex: number, texCoordsArrayIndex: number,model_textureArrayIndex: number) {
-
-        // console.log("Preparing geometric shape")
-        // console.log(pointsArray.current[0]);
 
         // *** Send position data to the GPU ***
         let vBuffer = gl.current.createBuffer();
@@ -350,20 +367,12 @@ function App() {
         sunlightIntensityUniformLocation.current  =  gl.current.getUniformLocation(program.current,'sun.color');
         sunlightDirectionUniformLocation.current  =  gl.current.getUniformLocation(program.current,'sun.direction');
 
-        // Initial lighting setup
-        /*gl.current.uniform3f(ambientLightUniformLocation ,parseFloat(rAmbient),parseFloat(gAmbient),parseFloat(bAmbient));
-        gl.current.uniform3f(sunlightIntensityUniformLocation ,parseFloat(rSun),parseFloat(gSun),parseFloat(bSun));
-        gl.current.uniform3f(sunlightDirectionUniformLocation ,parseFloat(xSun),parseFloat(ySun),parseFloat(zSun));
-        console.log(parseFloat(rAmbient) + " + " + parseFloat(gAmbient) + " + " + parseFloat(bAmbient) + " + " +parseFloat(rSun) + " + " + parseFloat(gSun) + " + " + parseFloat(bSun)+ " + " +parseFloat(xSun) + " + " + parseFloat(ySun) + " + " + parseFloat(zSun));
-*/
-
         // Set the image for the texture
         let image = new Image();
         image.src = model_texture.current[model_textureArrayIndex];
         image.onload = function () {
             configureTexture(image);
         }
-
 
         // *** Get a pointer for the model viewer
         modelViewMatrix.current = gl.current.getUniformLocation(program.current, "modelViewMatrix");
@@ -375,7 +384,6 @@ function App() {
         mat4.scale(ctm.current, ctm.current, [cube.scale, cube.scale, cube.scale]);
         // @ts-ignore
         mat4.translate(ctm.current, ctm.current, [cube.translation.x, cube.translation.y, cube.translation.z]);
-
 
         // @ts-ignore
         projMatUniformLocation.current = gl.current.getUniformLocation(program.current, 'projectionMatrix');
@@ -390,9 +398,6 @@ function App() {
 
         // @ts-ignore
         gl.current.uniformMatrix4fv( projMatUniformLocation.current , false, projMatrix.current);
-
-        // after the implementation of the prespective we need to ajust the position
-        // so that the we can see the object...
 
         // @ts-ignore
         mat4.translate(ctm.current,ctm.current,[0,0,-2]);
@@ -412,17 +417,17 @@ function App() {
         // @ts-ignore
         mat4.rotateZ(ctm.current, ctm.current, cube.currentRotation.z);
 
-
         // *** Transfer the information to the model viewer ***
         gl.current.uniformMatrix4fv(modelViewMatrix.current, false, ctm.current);
 
-
         // *** Draw the triangles ***
         gl.current.drawArrays(gl.current.TRIANGLES, 0, pointsArray.current[pointsArrayIndex].length / 3);
-
-
     }
 
+    /**
+     * Configures the tex of the object we are loading.
+     * @param image is the image (Texture) that we are loading.
+     */
     function configureTexture(image: any) {
         let texture = gl.current.createTexture();
         gl.current.bindTexture(gl.current.TEXTURE_2D, texture);
@@ -434,7 +439,10 @@ function App() {
         gl.current.uniform1i(gl.current.getUniformLocation(program.current, "texture"), 0);
     }
 
-
+    /**
+     * Creates a new object (model), adding it to the array of objects with base values to its proprieties.
+     * @param modelo is the type of object (model) we are creating.
+     */
     async function addModel(modelo:string){
 
         await createModel(modelo);
@@ -470,7 +478,9 @@ function App() {
         }
     }
 
-
+    /**
+     * Creates a new object (cube), adding it to the array of objects with base values to its proprieties.
+     */
     function addCube() {
 
         // *** Computes the cube ***
@@ -506,6 +516,9 @@ function App() {
         }
     }
 
+    /**
+     * Creates a new object (pyramid), adding it to the array of objects with base values to its proprieties.
+     */
     function addPyramid() {
 
         // *** Computes the cube ***
@@ -541,7 +554,9 @@ function App() {
         }
     }
 
-
+    /**
+     * clears the canvas and renders all the objects.
+     */
     async function render() {
 
         // Clear the canvas
@@ -560,6 +575,10 @@ function App() {
 
     }
 
+    /**
+     * Converts an hexadecimal color to it's RGB values.
+     * @param hex is the hexadecimal values of the color.
+     */
     function hexToRgb(hex: string) {
         let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result ? {
@@ -570,9 +589,9 @@ function App() {
     }
 
 
-    const [shape, setShape] = React.useState<"Cube" | "Pyramid">("Cube");
-    const [object, setObject] = React.useState<"Astronaut" | "Bird"| "Cat" | "Tiger" | "Trophy">("Astronaut");
 
+    const [shape, setShape] = React.useState<"Cube" | "Pyramid">("Cube");
+    const [object, setObject] = React.useState<"Astronaut" | "Bird"| "Cat" | "Tiger">("Astronaut");
 
     const defaultXRotation = "0";
     const defaultYRotation = "0";
@@ -580,8 +599,6 @@ function App() {
     const [xRotation, setXRotation] = React.useState(defaultXRotation);
     const [yRotation, setYRotation] = React.useState(defaultYRotation);
     const [zRotation, setZRotation] = React.useState(defaultZRotation);
-
-
 
     const defaultRambient = "0";
     const defaultGambient = "0";
@@ -602,8 +619,6 @@ function App() {
     const [ySun, setYSun] = React.useState(defaultYdirection);
     const [zSun, setZSun] = React.useState(defaultZdirection);
 
-
-
     const defaultScaleFactor = "30";
     const [scaleFactor, setScaleFactor] = React.useState(defaultScaleFactor);
 
@@ -613,7 +628,6 @@ function App() {
     const [xTranslation, setXTranslation] = React.useState(defaultXTranslation);
     const [yTranslation, setYTranslation] = React.useState(defaultYTranslation);
     const [zTranslation, setZTranslation] = React.useState(defaultZTranslation);
-
 
     // Add geometry faces dropdown
     const defaultFrontFaceColor = "#ff0000";
@@ -651,6 +665,9 @@ function App() {
     }
 
     // Selected geometry shape dropdown
+    /**
+     * Selection of the object to manipulate.
+     */
     const [numberOfGeometryShapesDropdown, setNumberOfGeometryShapesDropdown] = React.useState<JSX.Element[]>([])
     const [numberOfGeometricObjectsAdded, setNumberOfGeometricObjectsAdded] = React.useState(0);
     useEffect(() => {
@@ -667,6 +684,9 @@ function App() {
     }, [numberOfGeometricObjectsAdded])
 
     // Selected geometry
+    /**
+     * Sets the parameters of the selected object.
+     */
     const [selectedGeometryToEdit, setSelectedGeometryToEdit] = React.useState<string>("420");
     useEffect(() => {
         if (selectedGeometryToEdit === "420") {
@@ -689,6 +709,9 @@ function App() {
     }, [selectedGeometryToEdit])
 
     // Transformation button
+    /**
+     * Sets the transformation of a certain object.
+     */
     let setTransformationButton;
     if (selectedGeometryToEdit !== "420") {
         setTransformationButton = <button
@@ -703,6 +726,9 @@ function App() {
         </button>
     }
 
+    /**
+     * Resets the transformation of a certain object.
+     */
     let resetTransformationButton;
     if (selectedGeometryToEdit !== "420") {
         resetTransformationButton = <button
@@ -718,6 +744,9 @@ function App() {
     }
 
     // Set animation button
+    /**
+     * Sets the animation of a certain object.
+     */
     let setAnimationButton;
     if (selectedGeometryToEdit !== "420") {
         setAnimationButton = <button
@@ -732,6 +761,9 @@ function App() {
     }
 
     // Stop animation button
+    /**
+     * Stops the animation of a certain object
+     */
     let stopAnimationButton;
     if (selectedGeometryToEdit !== "420") {
         stopAnimationButton = <button
@@ -746,21 +778,24 @@ function App() {
     }
 
     // Set Lighting button
+    /**
+     * Sets the lighting of every object.
+     */
     let setLightButton;
         setLightButton = <button
             onClick={(e) => {
                 gl.current.uniform3f(ambientLightUniformLocation.current, parseFloat(rAmbient), parseFloat(gAmbient), parseFloat(bAmbient))
                 gl.current.uniform3f(sunlightIntensityUniformLocation.current, parseFloat(rSun), parseFloat(gSun), parseFloat(bSun))
                 gl.current.uniform3f(sunlightDirectionUniformLocation.current, parseFloat(xSun), parseFloat(ySun), parseFloat(zSun))
-                console.log("ambient: " + parseFloat(rAmbient) + " + " + parseFloat(gAmbient) + " + " + parseFloat(bAmbient))
-                console.log("sun: " + parseFloat(rSun) + " + " + parseFloat(gSun) + " + " + parseFloat(bSun))
-                console.log("direction: " + parseFloat(xSun) + " + " + parseFloat(ySun) + " + " + parseFloat(zSun))
             }}
         >
             Set Lighting
         </button>
 
     // Delete geometry button
+    /**
+     * Deletes a certain object.
+     */
     let deleteGeometryButton;
     if (selectedGeometryToEdit !== "420") {
         deleteGeometryButton = <button
@@ -960,14 +995,13 @@ function App() {
                                     <label>Choose an object:</label>
                                     <select name="objectToAdd" id="objectToAdd"
                                             onChange={(e) => {
-                                                setObject(e.target.value as "Astronaut" | "Bird"| "Cat" | "Tiger" | "Trophy")
+                                                setObject(e.target.value as "Astronaut" | "Bird"| "Cat" | "Tiger" )
                                                 console.log("Set object to " + e.target.value)
                                             }}>
                                         <option>Astronaut</option>
                                         <option>Bird</option>
                                         <option>Cat</option>
                                         <option>Tiger</option>
-                                        <option>Trophy</option>
                                     </select>
                                     <br/>
                                 </div>
