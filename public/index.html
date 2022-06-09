@@ -64,6 +64,7 @@
       uniform vec3 fambientLightIntensity;
       uniform DirectionalLight sun;
       uniform sampler2D texture;
+
       void main()
       {
         vec3 sunlightDirection = normalize(sun.direction);
@@ -71,7 +72,7 @@
         vec3 normal =  normalize(fNormal);
         vec3 lightIntensity = fambientLightIntensity +(sun.color * max(dot(normal,sunlightDirection),0.0));
 
-        gl_FragColor = vec4(texel.rgb * lightIntensity + lightIntensity * fColor , texel.a);
+        gl_FragColor = vec4(max(texel.rgb * lightIntensity, lightIntensity * fColor) , texel.a);
       }
 
 

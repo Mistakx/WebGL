@@ -13,8 +13,6 @@ function App() {
     let texCoordsArray = useRef<any>([]);
     /** texCoordsArray is the array of the object's textures points */
     let vertexNormals = useRef<any>([]);
-    /** model_texture is array of the object's texture */
-    let model_texture = useRef<any>([]);
     /** objectsArray is the array that contains every object object */
     let objectsArray = useRef<GeometryObject[]>([]);
 
@@ -72,19 +70,26 @@ function App() {
     }
 
     /**
-     * Creates the specified model, creating the necessary arrays of points.
+     * Creates the specified model, creating the necessary arrays of points and texture.
      * @param modelo is the name of the model to be created.
      */
     async function createModel(modelo:string) {
-        model_texture.current[objectsArray.current.length]=[];
+        let image = new Image();
         let model_content;
         switch (modelo){
             case "Astronaut":
-                model_texture.current[objectsArray.current.length].push(require("./models/Astronaut.png"));
+                // Set the image for the texture
+                image.src = require("./models/Astronaut.png");
+                image.onload = function () {
+                    configureTexture(image);
+                }
                 model_content =  await loadObjResource(require("./models/Astronaut.obj"));
                 break;
             case "Cat":
-                model_texture.current[objectsArray.current.length].push(require("./models/cat_texture.png"));
+                image.src = require("./models/cat_texture.png");
+                image.onload = function () {
+                    configureTexture(image);
+                }
                 model_content =  await loadObjResource(require("./models/cat.obj"));
                 break;
 
@@ -360,12 +365,6 @@ function App() {
         sunlightIntensityUniformLocation.current  =  gl.current.getUniformLocation(program.current,'sun.color');
         sunlightDirectionUniformLocation.current  =  gl.current.getUniformLocation(program.current,'sun.direction');
 
-        // Set the image for the texture
-        let image = new Image();
-        image.src = model_texture.current[model_textureArrayIndex];
-        image.onload = function () {
-            configureTexture(image);
-        }
 
         // *** Get a pointer for the model viewer
         modelViewMatrix.current = gl.current.getUniformLocation(program.current, "modelViewMatrix");
@@ -437,7 +436,6 @@ function App() {
      * @param modelo is the type of object (model) we are creating.
      */
     async function addModel(modelo:string){
-
         await createModel(modelo);
         // If the form has all the fields field
         let valid = scaleFactor && xTranslation && yTranslation && zTranslation && xRotation && yRotation && zRotation;
@@ -955,7 +953,7 @@ function App() {
                                 <button id="add_cube"
                                         onClick={() => {
                                             if (selectedGeometryToEdit === "420") {
-                                                if (numberOfGeometricObjectsAdded > 4) alert("Already added 5 objects")
+                                                if (numberOfGeometricObjectsAdded > 9) alert("Already added 10 objects")
                                                 else {
                                                     if (shape === "Cube") addCube()
                                                     else if (shape === "Pyramid") addPyramid()
@@ -1006,7 +1004,7 @@ function App() {
                                 <button id="add_object"
                                         onClick={() => {
                                             if (selectedGeometryToEdit === "420") {
-                                                if (numberOfGeometricObjectsAdded > 4) alert("Already added 5 objects")
+                                                if (numberOfGeometricObjectsAdded > 9) alert("Already added 10 objects")
                                                 else {
                                                      addModel(object)
                                                 }
