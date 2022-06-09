@@ -141,44 +141,6 @@ function App() {
             -.5, -.5, 0.5,
             -.5, 0.5, 0.5,
         ];
-        /*texCoordsArray.current[objectsArray.current.length] = [
-            0, 0,
-            0, 1,
-            1, 1,
-            0, 0,
-            1, 1,
-            1, 0,
-            0, 0,
-            0, 1,
-            1, 1,
-            0, 0,
-            1, 1,
-            1, 0,
-            0, 0,
-            0, 1,
-            1, 1,
-            0, 0,
-            1, 1,
-            1, 0,
-            0, 0,
-            0, 1,
-            1, 1,
-            0, 0,
-            1, 1,
-            1, 0,
-            0, 0,
-            0, 1,
-            1, 1,
-            0, 0,
-            1, 1,
-            1, 0,
-            0, 0,
-            0, 1,
-            1, 1,
-            0, 0,
-            1, 1,
-            1, 0,
-        ];*/
         vertexNormals.current[objectsArray.current.length] = [
             -.5, 0.5, 0.5,
             -.5, -.5, 0.5,
@@ -246,32 +208,31 @@ function App() {
         // Specify the coordinates to draw
         pointsArray.current[objectsArray.current.length] = [
             // Front face
-            0.0, 0.5, 0.0,
-            -0.5, -0.5, 0.5,
-            0.5, -0.5, 0.5,
+            0.0, 1.0, 0.0,
+            -1.0, -1.0, 1.0,
+            1.0, -1.0, 1.0,
 
             // Right face
-            0.0, 0.5, 0.0,
-            0.5, -0.5, 0.5,
-            0.5, -0.5, -0.5,
+            0.0, 1.0, 0.0,
+            1.0, -1.0, 1.0,
+            1.0, -1.0, -1.0,
 
             // Back face
-            0.0, 0.5, 0.0,
-            0.5, -0.5, -0.5,
-            -0.5, -0.5, -0.5,
+            0.0, 1.0, 0.0,
+            1.0, -1.0, -1.0,
+            -1.0, -1.0, -1.0,
 
             // Left face
-            0.0, 0.5, 0.0,
-            -0.5, -0.5, -0.5,
-            -0.5, -0.5, 0.5,
+            0.0, 1.0, 0.0,
+            -1.0, -1.0, -1.0,
+            -1.0, -1.0, 1.0,
 
-
-            -0.5, -0.5, -0.5,
-            0.5, -0.5, -0.5,
-            0.5, -0.5, 0.5,
-            -0.5, -0.5, -0.5,
-            0.5, -0.5, 0.5,
-            -0.5, -0.5, 0.5,
+            -1.0, -1.0, -1.0,
+            1.0, -1.0, -1.0,
+            1.0, -1.0, 1.0,
+            -1.0, -1.0, -1.0,
+            1.0, -1.0, 1.0,
+            -1.0, -1.0, 1.0,
         ];
         // Front face
         vertexNormals.current[objectsArray.current.length]=[
@@ -390,10 +351,11 @@ function App() {
         sunlightDirectionUniformLocation.current  =  gl.current.getUniformLocation(program.current,'sun.direction');
 
         // Initial lighting setup
-        gl.current.uniform3f(ambientLightUniformLocation.current ,0.2,0.2,0.2);
-        gl.current.uniform3f(sunlightIntensityUniformLocation.current ,1,1,1);
-        gl.current.uniform3f(sunlightDirectionUniformLocation.current ,-1,0,0);
-
+        /*gl.current.uniform3f(ambientLightUniformLocation ,parseFloat(rAmbient),parseFloat(gAmbient),parseFloat(bAmbient));
+        gl.current.uniform3f(sunlightIntensityUniformLocation ,parseFloat(rSun),parseFloat(gSun),parseFloat(bSun));
+        gl.current.uniform3f(sunlightDirectionUniformLocation ,parseFloat(xSun),parseFloat(ySun),parseFloat(zSun));
+        console.log(parseFloat(rAmbient) + " + " + parseFloat(gAmbient) + " + " + parseFloat(bAmbient) + " + " +parseFloat(rSun) + " + " + parseFloat(gSun) + " + " + parseFloat(bSun)+ " + " +parseFloat(xSun) + " + " + parseFloat(ySun) + " + " + parseFloat(zSun));
+*/
 
         // Set the image for the texture
         let image = new Image();
@@ -580,7 +542,7 @@ function App() {
     }
 
 
-    function render() {
+    async function render() {
 
         // Clear the canvas
         gl.current.clear(gl.current.COLOR_BUFFER_BIT | gl.current.DEPTH_BUFFER_BIT);
@@ -589,7 +551,7 @@ function App() {
 
         //  Add the objects to the canvas
         for (const object of objectsArray.current) {
-            prepareGeometricShape(object, currentIndex, currentIndex,currentIndex,currentIndex);
+            await prepareGeometricShape(object, currentIndex, currentIndex,currentIndex,currentIndex);
             currentIndex++
         }
 
@@ -621,13 +583,13 @@ function App() {
 
 
 
-    const defaultRambient = "0.2";
-    const defaultGambient = "0.2";
-    const defaultBambient = "0.2";
-    const defaultRsun = "1";
-    const defaultGsun = "1";
-    const defaultBsun = "1";
-    const defaultXdirection = "-1";
+    const defaultRambient = "0";
+    const defaultGambient = "0";
+    const defaultBambient = "0";
+    const defaultRsun = "0";
+    const defaultGsun = "0";
+    const defaultBsun = "0";
+    const defaultXdirection = "0";
     const defaultYdirection = "0";
     const defaultZdirection= "0";
     const [rAmbient, setRAmbient] = React.useState(defaultRambient);
@@ -785,18 +747,18 @@ function App() {
 
     // Set Lighting button
     let setLightButton;
-    setLightButton = <button
+        setLightButton = <button
             onClick={(e) => {
-
-                gl.current.uniform3f(ambientLightUniformLocation,parseInt(rAmbient),parseInt(gAmbient),parseInt(bAmbient));
-                gl.current.uniform3f(sunlightIntensityUniformLocation,parseInt(rSun),parseInt(gSun),parseInt(bSun));
-                gl.current.uniform3f(sunlightDirectionUniformLocation,parseInt(xSun),parseInt(ySun),parseInt(zSun));
-
+                gl.current.uniform3f(ambientLightUniformLocation.current, parseFloat(rAmbient), parseFloat(gAmbient), parseFloat(bAmbient))
+                gl.current.uniform3f(sunlightIntensityUniformLocation.current, parseFloat(rSun), parseFloat(gSun), parseFloat(bSun))
+                gl.current.uniform3f(sunlightDirectionUniformLocation.current, parseFloat(xSun), parseFloat(ySun), parseFloat(zSun))
+                console.log("ambient: " + parseFloat(rAmbient) + " + " + parseFloat(gAmbient) + " + " + parseFloat(bAmbient))
+                console.log("sun: " + parseFloat(rSun) + " + " + parseFloat(gSun) + " + " + parseFloat(bSun))
+                console.log("direction: " + parseFloat(xSun) + " + " + parseFloat(ySun) + " + " + parseFloat(zSun))
             }}
         >
             Set Lighting
         </button>
-
 
     // Delete geometry button
     let deleteGeometryButton;
