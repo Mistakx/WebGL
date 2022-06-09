@@ -83,18 +83,11 @@ function App() {
                 model_texture.current[objectsArray.current.length].push(require("./models/Astronaut.png"));
                 model_content =  await loadObjResource(require("./models/Astronaut.obj"));
                 break;
-            case "Bird":
-                model_texture.current[objectsArray.current.length].push(require("./models/bird.jpg"));
-                model_content =  await loadObjResource(require("./models/bird.obj"));
-                break;
             case "Cat":
                 model_texture.current[objectsArray.current.length].push(require("./models/cat_texture.png"));
                 model_content =  await loadObjResource(require("./models/cat.obj"));
                 break;
-            case "Tiger":
-                model_texture.current[objectsArray.current.length].push(require("./models/tiger_texture.jpg"));
-                model_content =  await loadObjResource(require("./models/tiger.obj"));
-                break;
+
 
         }
         pointsArray.current[objectsArray.current.length]=[];
@@ -591,7 +584,7 @@ function App() {
 
 
     const [shape, setShape] = React.useState<"Cube" | "Pyramid">("Cube");
-    const [object, setObject] = React.useState<"Astronaut" | "Bird"| "Cat" | "Tiger">("Astronaut");
+    const [object, setObject] = React.useState<"Astronaut" | "Cat" >("Astronaut");
 
     const defaultXRotation = "0";
     const defaultYRotation = "0";
@@ -995,13 +988,11 @@ function App() {
                                     <label>Choose an object:</label>
                                     <select name="objectToAdd" id="objectToAdd"
                                             onChange={(e) => {
-                                                setObject(e.target.value as "Astronaut" | "Bird"| "Cat" | "Tiger" )
+                                                setObject(e.target.value as "Astronaut" | "Cat" )
                                                 console.log("Set object to " + e.target.value)
                                             }}>
                                         <option>Astronaut</option>
-                                        <option>Bird</option>
                                         <option>Cat</option>
-                                        <option>Tiger</option>
                                     </select>
                                     <br/>
                                 </div>
